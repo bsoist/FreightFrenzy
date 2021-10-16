@@ -105,7 +105,7 @@ public class VuforiaFieldNavigationWebcam extends LinearOpMode {
     // Class Members
     private OpenGLMatrix lastLocation   = null;
     private VuforiaLocalizer vuforia    = null;
-    private VuforiaTrackables targets   = null ;
+    private VuforiaTrackables targets   = null;
     private WebcamName webcamName       = null;
 
     private boolean targetVisible       = false;
