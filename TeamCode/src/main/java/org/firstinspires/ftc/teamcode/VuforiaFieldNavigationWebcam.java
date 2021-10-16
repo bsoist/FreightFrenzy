@@ -27,13 +27,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.robotcontroller.external.samples;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
@@ -47,15 +48,16 @@ import java.util.List;
 
 import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
-import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
+import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XZY;
 import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
-import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection.BACK;
 
 /**
  * This OpMode illustrates using the Vuforia localizer to determine positioning and orientation of
- * robot on the FTC field using the RC phone's camera.  The code is structured as a LinearOpMode
+ * robot on the FTC field using a WEBCAM.  The code is structured as a LinearOpMode
  *
- * Note: If you are using a WEBCAM see ConceptVuforiaFieldNavigationWebcam.java
+ * NOTE: If you are running on a Phone with a built-in camera, use the ConceptVuforiaFieldNavigation example instead of this one.
+ * NOTE: It is possible to switch between multiple WebCams (eg: one for the left side and one for the right).
+ *       For a related example of how to do this, see ConceptTensorFlowObjectDetectionSwitchableCameras
  *
  * When images are located, Vuforia is able to determine the position and orientation of the
  * image relative to the camera.  This sample code then combines that information with a
@@ -73,16 +75,9 @@ import static org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocaliz
  * is explained below.
  */
 
-@TeleOp(name="Vuforia Field Nav", group ="Concept")
-// @Disabled
-public class VuforiaFieldNavigation extends LinearOpMode {
-
-    // IMPORTANT:  For Phone Camera, set 1) the camera source and 2) the orientation, based on how your phone is mounted:
-    // 1) Camera Source.  Valid choices are:  BACK (behind screen) or FRONT (selfie side)
-    // 2) Phone Orientation. Choices are: PHONE_IS_PORTRAIT = true (portrait) or PHONE_IS_PORTRAIT = false (landscape)
-
-    private static final VuforiaLocalizer.CameraDirection CAMERA_CHOICE = BACK;
-    private static final boolean PHONE_IS_PORTRAIT = false  ;
+@TeleOp(name="Vuforia Field Nav Webcam", group ="Concept")
+@Disabled
+public class ConceptVuforiaFieldNavigationWebcam extends LinearOpMode {
 
     /*
      * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
@@ -97,10 +92,10 @@ public class VuforiaFieldNavigation extends LinearOpMode {
      * and paste it in to your code on the next line, between the double quotes.
      */
     private static final String VUFORIA_KEY =
-            "ASYVnwL/////AAABmWrpGTWsBERHmzsoqdXt1m9+EuzfuJTnTl/KNp3SCy/HnqRDeol4cGWOVd85vtLGg2wokTI1g1nhXrRN2C7ygXKdnaxsVlMsxKsRxdo1KqGPaqIDVFlTAvlonb9GxC1wQrtIIUCdGioLB+/fMSGehrM/Mdv9+vsiezia4kbqJo1uAZIeQPZSG44qm2tED+Qt85CaQVGx4wSa82+hzwLL8sGCmccaOGBhgL4V3XNU5McKdLEANZqJczeh819pEdXEzxBqTHsu131XdQMD0F1U7A4BuhHtKc3VFMQ5pguZzdX7iOp/hvPDTaqKBHQxLrK8uCxnwa56FIFZ2/jUtY90eK83K3aTS2qoFJpjSfALIn+L";
+            " --- YOUR NEW VUFORIA KEY GOES HERE  --- ";
 
     // Since ImageTarget trackables use mm to specifiy their dimensions, we must use mm for all the physical dimension.
-    // We will define some constants and conversions here.  These are useful for the Freight Frenzy field.
+    // We will define some constants and conversions here
     private static final float mmPerInch        = 25.4f;
     private static final float mmTargetHeight   = 6 * mmPerInch;          // the height of the center of the target image above the floor
     private static final float halfField        = 72 * mmPerInch;
@@ -108,27 +103,31 @@ public class VuforiaFieldNavigation extends LinearOpMode {
     private static final float oneAndHalfTile   = 36 * mmPerInch;
 
     // Class Members
-    private OpenGLMatrix lastLocation = null;
-    private VuforiaLocalizer vuforia  = null;
-    private VuforiaTrackables targets = null ;
+    private OpenGLMatrix lastLocation   = null;
+    private VuforiaLocalizer vuforia    = null;
+    private VuforiaTrackables targets   = null ;
+    private WebcamName webcamName       = null;
 
-    private boolean targetVisible = false;
-    private float phoneXRotate    = 0;
-    private float phoneYRotate    = 0;
-    private float phoneZRotate    = 0;
+    private boolean targetVisible       = false;
 
     @Override public void runOpMode() {
+        // Connect to the camera we are to use.  This name must match what is set up in Robot Configuration
+        webcamName = hardwareMap.get(WebcamName.class, "Webcam 1");
+
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         * To get an on-phone camera preview, use the code below.
-         * If no camera preview is desired, use the parameter-less constructor instead (commented out below).
+         * We can pass Vuforia the handle to a camera preview resource (on the RC screen);
+         * If no camera-preview is desired, use the parameter-less constructor instead (commented out below).
+         * Note: A preview window is required if you want to view the camera stream on the Driver Station Phone.
          */
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
         // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection   = CAMERA_CHOICE;
+
+        // We also indicate which camera we wish to use.
+        parameters.cameraName = webcamName;
 
         // Turn off Extended tracking.  Set this true if you want Vuforia to track beyond the target.
         parameters.useExtendedTracking = false;
@@ -169,51 +168,42 @@ public class VuforiaFieldNavigation extends LinearOpMode {
         identifyTarget(3, "Red Alliance Wall",   halfTile,  -halfField,      mmTargetHeight, 90, 0, 180);
 
         /*
-         * Create a transformation matrix describing where the phone is on the robot.
-         *
-         * NOTE !!!!  It's very important that you turn OFF your phone's Auto-Screen-Rotation option.
-         * Lock it into Portrait for these numbers to work.
+         * Create a transformation matrix describing where the camera is on the robot.
          *
          * Info:  The coordinate frame for the robot looks the same as the field.
          * The robot's "forward" direction is facing out along X axis, with the LEFT side facing out along the Y axis.
-         * Z is UP on the robot.  This equates to a heading angle of Zero degrees.
+         * Z is UP on the robot.  This equates to a bearing angle of Zero degrees.
          *
-         * The phone starts out lying flat, with the screen facing Up and with the physical top of the phone
-         * pointing to the LEFT side of the Robot.
-         * The two examples below assume that the camera is facing forward out the front of the robot.
+         * For a WebCam, the default starting orientation of the camera is looking UP (pointing in the Z direction),
+         * with the wide (horizontal) axis of the camera aligned with the X axis, and
+         * the Narrow (vertical) axis of the camera aligned with the Y axis
+         *
+         * But, this example assumes that the camera is actually facing forward out the front of the robot.
+         * So, the "default" camera position requires two rotations to get it oriented correctly.
+         * 1) First it must be rotated +90 degrees around the X axis to get it horizontal (its now facing out the right side of the robot)
+         * 2) Next it must be be rotated +90 degrees (counter-clockwise) around the Z axis to face forward.
+         *
+         * Finally the camera can be translated to its actual mounting position on the robot.
+         *      In this example, it is centered on the robot (left-to-right and front-to-back), and 6 inches above ground level.
          */
 
-        // We need to rotate the camera around its long axis to bring the correct camera forward.
-        if (CAMERA_CHOICE == BACK) {
-            phoneYRotate = -90;
-        } else {
-            phoneYRotate = 90;
-        }
-
-        // Rotate the phone vertical about the X axis if it's in portrait mode
-        if (PHONE_IS_PORTRAIT) {
-            phoneXRotate = 90 ;
-        }
-
-        // Next, translate the camera lens to where it is on the robot.
-        // In this example, it is centered on the robot (left-to-right and front-to-back), and 6 inches above ground level.
         final float CAMERA_FORWARD_DISPLACEMENT  = 0.0f * mmPerInch;   // eg: Enter the forward distance from the center of the robot to the camera lens
         final float CAMERA_VERTICAL_DISPLACEMENT = 6.0f * mmPerInch;   // eg: Camera is 6 Inches above ground
         final float CAMERA_LEFT_DISPLACEMENT     = 0.0f * mmPerInch;   // eg: Enter the left distance from the center of the robot to the camera lens
 
-        OpenGLMatrix robotFromCamera = OpenGLMatrix
+        OpenGLMatrix cameraLocationOnRobot = OpenGLMatrix
                     .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
-                    .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
+                    .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XZY, DEGREES, 90, 90, 0));
 
-        /**  Let all the trackable listeners know where the phone is.  */
+        /**  Let all the trackable listeners know where the camera is.  */
         for (VuforiaTrackable trackable : allTrackables) {
-            ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
+            ((VuforiaTrackableDefaultListener) trackable.getListener()).setCameraLocationOnRobot(parameters.cameraName, cameraLocationOnRobot);
         }
 
         /*
          * WARNING:
          * In this sample, we do not wait for PLAY to be pressed.  Target Tracking is started immediately when INIT is pressed.
-         * This sequence is used to enable the new remote DS Camera Stream feature to be used with this sample.
+         * This sequence is used to enable the new remote DS Camera Preview feature to be used with this sample.
          * CONSEQUENTLY do not put any driving commands in this loop.
          * To restore the normal opmode structure, just un-comment the following line:
          */
