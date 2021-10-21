@@ -1,10 +1,10 @@
 [
     {
-        "merged": "/Users/siddharthkancharapu/FreightFrenzy/TeamCode/build/intermediates/res/merged/debug/xml_teamwebcamcalibrations.xml.flat",
-        "source": "/Users/siddharthkancharapu/FreightFrenzy/TeamCode/src/main/res/xml/teamwebcamcalibrations.xml"
+        "merged": "C:\\Users\\jhain\\Desktop\\FreightFrenzy\\TeamCode\\build\\intermediates\\res\\merged\\debug\\xml_teamwebcamcalibrations.xml.flat",
+        "source": "C:\\Users\\jhain\\Desktop\\FreightFrenzy\\TeamCode\\src\\main\\res\\xml\\teamwebcamcalibrations.xml"
     },
     {
-        "merged": "/Users/siddharthkancharapu/FreightFrenzy/TeamCode/build/intermediates/res/merged/debug/raw_readme.md.flat",
-        "source": "/Users/siddharthkancharapu/FreightFrenzy/TeamCode/src/main/res/raw/readme.md"
+        "merged": "C:\\Users\\jhain\\Desktop\\FreightFrenzy\\TeamCode\\build\\intermediates\\res\\merged\\debug\\raw_readme.md.flat",
+        "source": "C:\\Users\\jhain\\Desktop\\FreightFrenzy\\TeamCode\\src\\main\\res\\raw\\readme.md"
     }
 ]

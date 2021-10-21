@@ -120,7 +120,7 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
             // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
             // should be set to the value of the images used to create the TensorFlow Object Detection model
             // (typically 16/9).
-            tfod.setZoom(2.5, 16.0/9.0);
+            tfod.setZoom(2, 16.0/9.0);
         }
 
         /** Wait for the game to begin */
@@ -130,6 +130,11 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
+
+                boolean left = false;
+                boolean middle = false;
+                boolean right = false;
+
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
                     // the last time that call was made.
@@ -144,7 +149,40 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
                                 recognition.getLeft(), recognition.getTop());
                         telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                                 recognition.getRight(), recognition.getBottom());
+                        if (recognition.getLeft() < 280) {
+                            left = true;
+                            middle = false;
+                            right = false;
+
+                        }
+                        else if (recognition.getLeft() > 280) {
+                            left = false;
+                            middle = true;
+                            right = false;
+                        }
+                        else {
+                            left = false;
+                            middle = false;
+                            right = true;
+                        }
+
+                          if (left = true){
+                              telemetry.addData(String.format("Object Position"), "left");
+
+
+                          }
+                          else if (middle = true) {
+                              telemetry.addData(String.format("Object Position"), "middle");
+
+
+                          }
+                          else if (right = true) {
+                              telemetry.addData(String.format("Object Position"), "right");
+
                         i++;
+                      }
+
+
                       }
                       telemetry.update();
                     }

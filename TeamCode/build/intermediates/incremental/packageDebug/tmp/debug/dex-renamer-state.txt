@@ -1,13 +1,13 @@
-#Fri Oct 15 21:53:43 EDT 2021
+#Wed Oct 20 19:57:51 EDT 2021
 path.3=classes_0.dex
 path.2=classes2.dex
 path.1=classes.dex
 path.0=classes.dex
+base.3=C\:\\Users\\jhain\\Desktop\\FreightFrenzy\\TeamCode\\build\\intermediates\\dex\\debug\\mergeLibDexDebug\\classes_0.dex
+base.2=C\:\\Users\\jhain\\Desktop\\FreightFrenzy\\TeamCode\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes2.dex
+base.1=C\:\\Users\\jhain\\Desktop\\FreightFrenzy\\TeamCode\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\classes.dex
+base.0=C\:\\Users\\jhain\\Desktop\\FreightFrenzy\\TeamCode\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
 renamed.3=classes4.dex
 renamed.2=classes3.dex
 renamed.1=classes2.dex
 renamed.0=classes.dex
-base.3=/Users/siddharthkancharapu/FreightFrenzy/TeamCode/build/intermediates/dex/debug/mergeLibDexDebug/classes_0.dex
-base.2=/Users/siddharthkancharapu/FreightFrenzy/TeamCode/build/intermediates/dex/debug/mergeExtDexDebug/classes2.dex
-base.1=/Users/siddharthkancharapu/FreightFrenzy/TeamCode/build/intermediates/dex/debug/mergeProjectDexDebug/classes.dex
-base.0=/Users/siddharthkancharapu/FreightFrenzy/TeamCode/build/intermediates/dex/debug/mergeExtDexDebug/classes.dex
