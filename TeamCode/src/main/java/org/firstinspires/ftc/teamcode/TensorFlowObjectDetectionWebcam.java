@@ -33,6 +33,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
@@ -51,7 +53,7 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@TeleOp(name = "Concept: TensorFlow Object Detection Webcam", group = "Concept")
+@TeleOp(name = "Webcam Auto", group = "Concept")
 // @Disabled
 public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
   /* Note: This sample uses the all-objects Tensor Flow model (FreightFrenzy_BCDM.tflite), which contains
@@ -100,12 +102,27 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
      */
     private TFObjectDetector tfod;
 
+    private DcMotor backLeft = null;
+    private DcMotor backRight = null;
+    private DcMotor frontLeft = null;
+    private DcMotor frontRight = null;
+
     @Override
     public void runOpMode() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
         initVuforia();
         initTfod();
+
+
+
+        backleft = hardwareMap.get(DcMotor.class, "backLeft");
+        backRight = hardwareMap.get(DcMotor.class, "backLeft");
+        frontLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        frontRight = hardwareMap.get(DcMotor.class, "backLeft");
+
+        backRight = setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRight = setDirection(DcMotorSimple.Direction.REVERSE);
 
         /**
          * Activate TensorFlow Object Detection before we wait for the start command.
@@ -135,6 +152,9 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 
                 String position[] = {"left", "middle", "right"};
                 String drive = position[2];
+                boolean bottomLevel = false;
+                boolean middleLevel = false;
+                boolean topLevel = false;
 
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
@@ -153,12 +173,13 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 
 
                             if (recognition.getLeft() < 280) {
-                                drive = position[0];
+                                drive = position[0]; // Corresponds to bottom of shipping hub
+
 
                             } else if ((recognition.getLeft() > 280) && (recognition.getLeft() < 550)) {
                                 drive = position[1];
                             } else {
-                                drive = position[2];
+                                drive = position[2]; // Corresponds to top of shipping hub
                             }
                             i++;
                         }
@@ -166,6 +187,31 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
                         telemetry.update();
                     }
                 }
+
+                if(drive == position[0]){
+                    bottomLevel = true;
+                }
+                else if(drive == position[1]){
+                    middleLevel = true;
+                }
+                else if(drive == position[2]){
+                    topLevel = true;
+                }
+                // Move to Shipping Hub...
+                if(bottomLevel){
+
+                }
+                if(middleLevel){
+
+                }
+                if(topLevel){
+
+                }
+                // Move into Warehouse completely, pick up 1 Freight...
+                // Move back to Shipping Hub...
+                // Do whatever level is quickest (bottomLevel, middleLevel, topLevel)
+                // Move back into Warehouse completely, park
+
             }
         }
     }
