@@ -76,7 +76,7 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.
  */
 
 @TeleOp(name="Vuforia Field Nav Webcam", group ="Concept")
-// @Disabled
+@Disabled
 public class VuforiaFieldNavigationWebcam extends LinearOpMode {
 
     /*
@@ -109,6 +109,8 @@ public class VuforiaFieldNavigationWebcam extends LinearOpMode {
     private WebcamName webcamName       = null;
 
     private boolean targetVisible       = false;
+
+
 
     @Override public void runOpMode() {
         // Connect to the camera we are to use.  This name must match what is set up in Robot Configuration

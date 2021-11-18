@@ -35,6 +35,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
@@ -108,6 +109,19 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
     private DcMotor fLeft = null;
     private DcMotor fRight = null;
 
+    //double leftPower = 0;
+    //double rightPower = 0;
+    double speed = .4;
+
+
+    public void runMotors(double leftPower, double rightPower, double speed, long timeMS) {
+        bLeft.setPower(leftPower * speed);
+        bRight.setPower(rightPower * speed);
+        fLeft.setPower(leftPower * speed);
+        fRight.setPower(rightPower * speed);
+        sleep(timeMS);
+    }
+
     @Override
     public void runOpMode() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
@@ -115,15 +129,15 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
         initVuforia();
         initTfod();
 
-
-
         bLeft = hardwareMap.get(DcMotor.class, "backLeft");
         bRight = hardwareMap.get(DcMotor.class, "backRight");
         fLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         fRight = hardwareMap.get(DcMotor.class, "frontRight");
 
-        bRight.setDirection(DcMotor.Direction.REVERSE);
-        fRight.setDirection(DcMotor.Direction.REVERSE);
+        bLeft.setDirection(DcMotor.Direction.REVERSE);
+        fLeft.setDirection(DcMotor.Direction.REVERSE);
+
+        //bLeft.getZeroPowerBehavior(Brake);
 
         /**
          * Activate TensorFlow Object Detection before we wait for the start command.
@@ -150,12 +164,16 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
+                runMotors(0,0,0,0);
 
                 String position[] = {"left", "middle", "right"};
                 String drive = position[2];
+
                 boolean bottomLevel = false;
                 boolean middleLevel = false;
                 boolean topLevel = false;
+
+
 
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
@@ -172,7 +190,7 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
                             telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                                     recognition.getRight(), recognition.getBottom());
 
-
+                            sleep(1000);
                             if (recognition.getLeft() < 280) {
                                 drive = position[0]; // Corresponds to bottom of shipping hub
 
@@ -198,7 +216,28 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
                 else if(drive == position[2]){
                     topLevel = true;
                 }
-                // Move to Shipping Hub...
+                sleep(3000);
+//                 Move to Shipping Hub...
+                runMotors(1.0, 0.4, speed, 1000);//arc right
+//                leftPower    = 1.0;
+//                rightPower   = 0.4;
+//                bLeft.setPower (leftPower  * speed);
+//                bRight.setPower(rightPower * speed);
+//                fLeft.setPower (leftPower  * speed);
+//                fRight.setPower(rightPower * speed);
+//                sleep(1000);
+
+                runMotors(0.6, 1.0, speed, 1000);//arc left to shipping hub
+//                leftPower    = 0.6;
+//                rightPower   = 1.0;
+//                bLeft.setPower (leftPower  * speed);
+//                bRight.setPower(rightPower * speed);
+//                fLeft.setPower (leftPower  * speed);
+//                fRight.setPower(rightPower * speed);
+//                sleep(1000);
+
+                sleep(5000);//code to drop freight...
+
                 if(bottomLevel){
 
                 }
@@ -208,10 +247,25 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
                 if(topLevel){
 
                 }
-                // Move into Warehouse completely, pick up 1 Freight...
+                // Move into Warehouse completely, pick up 1 freight...
+                runMotors(1,0, speed, 600);
+                runMotors(-1,-1,speed, 700);
+                runMotors(-1, 1, speed, 700);
+                runMotors(1,1, speed, 1000);// Fully enter Warehouse
+                //pickup freight...
+
                 // Move back to Shipping Hub...
+                runMotors(-1,-1, speed, 1000); //Fully leave Warehouse
+                runMotors(1,-1,speed,700);
+                runMotors(1,1,speed,1000);//At shipping hub
                 // Do whatever level is quickest (bottomLevel, middleLevel, topLevel)
+
+
                 // Move back into Warehouse completely, park
+                runMotors(-1,-1, speed, 1000);
+                runMotors(-1,1,speed,700);
+                runMotors(1,1,speed,1000);//Fully enter Warehouse
+                runMotors(0,0,0,0);
 
             }
         }
