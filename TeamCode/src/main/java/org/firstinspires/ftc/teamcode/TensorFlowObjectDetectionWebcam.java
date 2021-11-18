@@ -41,6 +41,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
+
 import java.util.List;
 
 /**
@@ -102,10 +103,10 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
      */
     private TFObjectDetector tfod;
 
-    private DcMotor backLeft = null;
-    private DcMotor backRight = null;
-    private DcMotor frontLeft = null;
-    private DcMotor frontRight = null;
+    private DcMotor bLeft = null;
+    private DcMotor bRight = null;
+    private DcMotor fLeft = null;
+    private DcMotor fRight = null;
 
     @Override
     public void runOpMode() {
@@ -116,13 +117,13 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 
 
 
-        backleft = hardwareMap.get(DcMotor.class, "backLeft");
-        backRight = hardwareMap.get(DcMotor.class, "backLeft");
-        frontLeft = hardwareMap.get(DcMotor.class, "backLeft");
-        frontRight = hardwareMap.get(DcMotor.class, "backLeft");
+        bLeft = hardwareMap.get(DcMotor.class, "backLeft");
+        bRight = hardwareMap.get(DcMotor.class, "backRight");
+        fLeft = hardwareMap.get(DcMotor.class, "frontLeft");
+        fRight = hardwareMap.get(DcMotor.class, "frontRight");
 
-        backRight = setDirection(DcMotorSimple.Direction.REVERSE);
-        frontRight = setDirection(DcMotorSimple.Direction.REVERSE);
+        bRight.setDirection(DcMotor.Direction.REVERSE);
+        fRight.setDirection(DcMotor.Direction.REVERSE);
 
         /**
          * Activate TensorFlow Object Detection before we wait for the start command.
