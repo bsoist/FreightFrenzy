@@ -111,15 +111,24 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 
     //double leftPower = 0;
     //double rightPower = 0;
-    double speed = .4;
+    double speed = .2;
+    long scale = 4;
 
 
-    public void runMotors(double leftPower, double rightPower, double speed, long timeMS) {
+    public void runMotors(double leftPower, double rightPower, double speed, long durationMS) {
         bLeft.setPower(leftPower * speed);
         bRight.setPower(rightPower * speed);
         fLeft.setPower(leftPower * speed);
         fRight.setPower(rightPower * speed);
-        sleep(timeMS);
+        sleep(durationMS * scale);
+    }
+
+    public void brake(long durationMS) {
+        bLeft.setPower(0);
+        bRight.setPower(0);
+        fLeft.setPower(0);
+        fRight.setPower(0);
+        sleep(durationMS);
     }
 
     @Override
@@ -136,6 +145,14 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 
         bLeft.setDirection(DcMotor.Direction.REVERSE);
         fLeft.setDirection(DcMotor.Direction.REVERSE);
+        bRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        fRight.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        bLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        bRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        fRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 
         //bLeft.getZeroPowerBehavior(Brake);
 
@@ -164,7 +181,7 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
-                runMotors(0,0,0,0);
+                brake(200);
 
                 String position[] = {"left", "middle", "right"};
                 String drive = position[2];
@@ -226,6 +243,7 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 //                fLeft.setPower (leftPower  * speed);
 //                fRight.setPower(rightPower * speed);
 //                sleep(1000);
+                brake(1000);
 
                 runMotors(0.6, 1.0, speed, 1000);//arc left to shipping hub
 //                leftPower    = 0.6;
@@ -235,37 +253,48 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
 //                fLeft.setPower (leftPower  * speed);
 //                fRight.setPower(rightPower * speed);
 //                sleep(1000);
+                brake(1000);
 
-                sleep(5000);//code to drop freight...
-
-                if(bottomLevel){
-
-                }
-                if(middleLevel){
-
-                }
-                if(topLevel){
-
-                }
-                // Move into Warehouse completely, pick up 1 freight...
-                runMotors(1,0, speed, 600);
-                runMotors(-1,-1,speed, 700);
-                runMotors(-1, 1, speed, 700);
-                runMotors(1,1, speed, 1000);// Fully enter Warehouse
-                //pickup freight...
-
-                // Move back to Shipping Hub...
-                runMotors(-1,-1, speed, 1000); //Fully leave Warehouse
-                runMotors(1,-1,speed,700);
-                runMotors(1,1,speed,1000);//At shipping hub
-                // Do whatever level is quickest (bottomLevel, middleLevel, topLevel)
-
-
-                // Move back into Warehouse completely, park
-                runMotors(-1,-1, speed, 1000);
-                runMotors(-1,1,speed,700);
-                runMotors(1,1,speed,1000);//Fully enter Warehouse
-                runMotors(0,0,0,0);
+//                sleep(5000);//code to drop freight...
+//
+//                if(bottomLevel){
+//
+//                }
+//                if(middleLevel){
+//
+//                }
+//                if(topLevel){
+//
+//                }
+//                // Move into Warehouse completely, pick up 1 freight...
+//                runMotors(1,0, speed, 600);
+//                brake(1000);
+//                runMotors(-1,-1,speed, 700);
+//                brake(1000);
+//                runMotors(-1, 1, speed, 700);
+//                brake(1000);
+//                runMotors(1,1, speed, 1000);// Fully enter Warehouse
+//                brake(1000);
+//
+//                //pickup freight...
+//
+//                // Move back to Shipping Hub...
+//                runMotors(-1,-1, speed, 1000); //Fully leave Warehouse
+//                brake(1000);
+//                runMotors(1,-1,speed,700);
+//                brake(1000);
+//                runMotors(1,1,speed,1000);//At shipping hub
+//                brake(1000);
+//                // Do whatever level is quickest (bottomLevel, middleLevel, topLevel)
+//
+//
+//                // Move back into Warehouse completely, park
+//                runMotors(-1,-1, speed, 1000);
+//                brake(1000);
+//                runMotors(-1,1,speed,700);
+//                brake(1000);
+//                runMotors(1,1,speed,1000);//Fully enter Warehouse
+//                brake(2000);
 
             }
         }
