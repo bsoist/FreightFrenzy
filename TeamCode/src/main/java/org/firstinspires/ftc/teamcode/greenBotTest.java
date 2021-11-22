@@ -95,6 +95,8 @@ public class greenBotTest extends LinearOpMode {
 
         double armSpeed = .85;
         claw.setPosition(-1.0);
+        boolean elbowBrake = false;
+        boolean shoulderBrake = false;
 
         waitForStart();
         runtime.reset();
@@ -104,7 +106,8 @@ public class greenBotTest extends LinearOpMode {
             double y =   gamepad1.right_stick_y;
             double speed = Range.clip(gamepad1.left_stick_y, -1.0, 0);
 
-            int currentPosition = elbow.getCurrentPosition();
+            int elbowCurrentPosition    =    elbow.getCurrentPosition();
+            int shoulderCurrentPosition = shoulder.getCurrentPosition();
 
 
 
@@ -122,38 +125,50 @@ public class greenBotTest extends LinearOpMode {
             double leftDirection =  y + x;
             double rightDirection = y - x;
 
-            double leftPower =     Range.clip(leftDirection         , -1.0, 1.0) * speed;
-            double rightPower   =  Range.clip(rightDirection        , -1.0, 1.0) * speed;
-            double elbowPower =    Range.clip(gamepad2.left_stick_y , -1.0, 1.0) * armSpeed;
+            double leftPower     = Range.clip(leftDirection         , -1.0, 1.0) *    speed;
+            double rightPower    = Range.clip(rightDirection        , -1.0, 1.0) *    speed;
+            double elbowPower    = Range.clip(gamepad2.left_stick_y , -1.0, 1.0) * armSpeed;
             double shoulderPower = Range.clip(gamepad2.right_stick_y, -1.0, 1.0) * armSpeed;
 
             // Send calculated power to wheels
-            bLeft.setPower        (leftPower);
-            bRight.setPower      (rightPower);
-            fLeft.setPower        (leftPower);
-            fRight.setPower      (rightPower);
-            elbow  .setPower(elbowPower    );
+            bLeft   .setPower    (leftPower);
+            bRight  .setPower   (rightPower);
+            fLeft   .setPower    (leftPower);
+            fRight  .setPower   (rightPower);
+            elbow   .setPower   (elbowPower);
             shoulder.setPower(shoulderPower);
 
-
-            if (elbowPower == 0) {
-                elbow.setTargetPosition(currentPosition);
-                elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            if (gamepad2.left_stick_button) {
+                if (!elbowBrake) {
+                    elbow.setTargetPosition(elbowCurrentPosition);
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elbowBrake = true;
+                }
+                else{
+                    elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    elbowBrake = false;
+                }
             }
-            else { elbow  .setPower(elbowPower    ); }
 
-            if (shoulderPower == 0) {
-                shoulder.setTargetPosition(currentPosition);
-                shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            if (gamepad2.right_stick_button) {
+                if (!shoulderBrake) {
+                    shoulder.setTargetPosition(shoulderCurrentPosition);
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    shoulderBrake = true;
+                }
+                else{
+                    shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    shoulderBrake = false;
+                }
             }
-            else { shoulder.setPower(shoulderPower); }
 
             // Returning Telemetry Data
             telemetry.addData("Status"        ,  "Run Time: " + runtime.toString());
-            telemetry.addData("Intended Power", "left (%.2f), right (%.2f)"    , leftDirection, rightDirection);
-            telemetry.addData("Chassis Motors", "left (%.2f), right (%.2f)"    , leftPower, rightPower        );
-            telemetry.addData("Arm Motors"    , "shoulder (%.2f), elbow (%.2f)", shoulderPower, elbowPower    );
-            telemetry.addData("Claw"          , "Position: (%.2f)"             , claw.getPosition()           );
+            telemetry.addData("Intended Power", "left (%.2f), right (%.2f)"    , leftDirection, rightDirection   );
+            telemetry.addData("Chassis Motors", "left (%.2f), right (%.2f)"    , leftPower, rightPower           );
+            telemetry.addData("Claw"          , "Position: (%.2f)"             , claw.getPosition()              );
+            telemetry.addData("Shoulder"      , "Power: (%.2f), Position: (%i), Brake: (%b)", shoulderPower, shoulderCurrentPosition, shoulderBrake);
+            telemetry.addData("Elbow"         , "Power: (%.2f), Position: (%i), Brake: (%b)", elbowPower, elbowCurrentPosition, elbowBrake);
             telemetry.update();
         }
     }
