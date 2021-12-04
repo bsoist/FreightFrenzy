@@ -32,22 +32,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-
-
-/**
- * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
- * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
- * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all linear OpModes contain.
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
- */
 
 @TeleOp(name="Early Drive", group="--")
 //@Disabled
@@ -60,15 +47,25 @@ public class BasicOpMode_Linear extends LinearOpMode {
     private DcMotor fLeft = null;
     private DcMotor fRight = null;
 
+    /**
+     * Manages toggling an action.
+     *
+     * Call checkToggleStatus once every loop to determine whether a full button press has
+     * occurred or not.
+     */
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        bLeft = hardwareMap.get(DcMotor.class, "backLeft");
-        bRight = hardwareMap.get(DcMotor.class, "backRight");
-        fLeft = hardwareMap.get(DcMotor.class, "frontLeft");
-        fRight = hardwareMap.get(DcMotor.class, "frontRight");
+        DcMotorEx bLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
+        DcMotorEx bRight = hardwareMap.get(DcMotorEx.class, "backRight");
+        DcMotorEx fLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
+        DcMotorEx fRight = hardwareMap.get(DcMotorEx.class, "frontRight");
+        bLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        fLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
          bRight.setDirection(DcMotor.Direction.REVERSE);
          fRight.setDirection(DcMotor.Direction.REVERSE);
@@ -84,24 +81,38 @@ public class BasicOpMode_Linear extends LinearOpMode {
 
             double x =  gamepad1.right_stick_x;
             double y =  -gamepad1.right_stick_y;
-            double speed = Range.clip(gamepad1.left_stick_y, -1.0, 0);
+//            double speed = Range.clip(gamepad1.left_stick_y, -1.0, 0);
+            double motorVelocity = -gamepad1.left_stick_y * 2500;
 
             double leftDirection = y + x;
             double rightDirection = y - x;
 
-            leftPower    = Range.clip(leftDirection * speed, -1.0, 1.0);
-            rightPower   = Range.clip(rightDirection * speed, -1.0, 1.0);
+//            leftPower    = Range.clip(leftDirection * speed, -1.0, 1.0);
+//            rightPower   = Range.clip(rightDirection * speed, -1.0, 1.0);
 
-            // Send calculated power to wheels
-            bLeft.setPower(leftPower);
-            bRight.setPower(rightPower);
-            fLeft.setPower((leftPower));
-            fRight.setPower(rightPower);
+            double leftVelocity   = leftDirection * motorVelocity;
+            double rightVelocity   = rightDirection * motorVelocity;
+
+
+//             Send calculated power to wheels
+//            bLeft.setPower(leftPower);
+//            bRight.setPower(rightPower);
+//            fLeft.setPower((leftPower));
+//            fRight.setPower(rightPower);
+
+            bLeft.setVelocity(leftVelocity);
+            fLeft.setVelocity(leftVelocity);
+            bRight.setVelocity(rightVelocity);
+            fRight.setVelocity(rightVelocity);
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-            telemetry.addData("Intended Power", "left (%.2f), right (%.2f)", leftDirection, rightDirection);
+            telemetry.addData("Base Velocity", "(%.2f)", motorVelocity);
+            telemetry.addData("Motor Power",
+                    "back left (%.2f), back right (%.2f), front left (%.2f), front right (%.2f)",
+                            bLeft.getPower(), bRight.getPower(), fLeft.getPower(),  fRight.getPower());
+            telemetry.addData("Theoretical Velocity", "left (%.2f), right (%.2f)", leftVelocity, rightVelocity);
+            telemetry.addData("Motor Direction", "left (%.2f), right (%.2f)", leftDirection, rightDirection);
             telemetry.update();
         }
     }

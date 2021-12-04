@@ -49,6 +49,50 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
+class Toggle
+{
+    /**
+     * Holds all the states that a toggle can be in. When pressing a button, there are 3 states:
+     * 1. Not begun
+     * 2. In progress
+     * 3. Complete
+     *
+     * If you're checking a button press using a conventional on/off check and using it to
+     * flip a boolean, then you'll flip once for every time the button is held and the
+     * loop iterates.
+     */
+    enum Status
+    {
+        NOT_BEGUN ,
+        IN_PROGRESS ,
+        COMPLETE
+    }
+
+
+    private Status _status = Status.NOT_BEGUN;      // Current status of the toggle
+
+
+    /**
+     *  Monitors and adjusts the toggle value based on previous toggle values and the
+     *  state of the boolean passed in.
+     */
+    public Status status(boolean buttonStatus)
+    {
+        // If the button is being held
+        if(buttonStatus && _status == Status.NOT_BEGUN)
+            _status = Status.IN_PROGRESS;
+
+            // If the button is not being pressed and the toggle was in progress
+        else if(!buttonStatus && _status == Status.IN_PROGRESS)
+            _status = Status.COMPLETE;
+
+            // If the toggle is finished
+        else if(_status == Status.COMPLETE)
+            _status = Status.NOT_BEGUN;
+
+        return _status;
+    }
+}
 @TeleOp(name="Green Bot Arm Test", group="--")
 //@Disabled
 public class greenBotTest extends LinearOpMode {
@@ -80,6 +124,12 @@ public class greenBotTest extends LinearOpMode {
 
         bRight.setDirection(DcMotor.Direction.REVERSE);
         fRight.setDirection(DcMotor.Direction.REVERSE);
+        elbow .setDirection(DcMotor.Direction.REVERSE);
+
+        //elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         bLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         bRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -88,15 +138,13 @@ public class greenBotTest extends LinearOpMode {
         elbow.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         shoulder.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-        double armSpeed = .85;
+        double armSpeed = 1;
         claw.setPosition(-1.0);
         boolean elbowBrake = false;
         boolean shoulderBrake = false;
+
+        Toggle eBrake = new Toggle();    // Slows down drivetrain when on
+        Toggle sBrake = new Toggle();    // Slows down drivetrain when on
 
         waitForStart();
         runtime.reset();
@@ -135,31 +183,52 @@ public class greenBotTest extends LinearOpMode {
             bRight  .setPower   (rightPower);
             fLeft   .setPower    (leftPower);
             fRight  .setPower   (rightPower);
-            elbow   .setPower   (elbowPower);
-            shoulder.setPower(shoulderPower);
 
-            if (gamepad2.left_stick_button) {
-                if (!elbowBrake) {
-                    elbow.setTargetPosition(elbowCurrentPosition);
-                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    elbowBrake = true;
-                }
-                else{
-                    elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                    elbowBrake = false;
-                }
+            //if left stick button has been toggled
+//            if(eBrake.status(gamepad2.left_stick_button) == Toggle.Status.COMPLETE & !elbowBrake)
+//                elbowBrake = true;
+//            if(eBrake.status(gamepad2.left_stick_button) == Toggle.Status.COMPLETE & elbowBrake)
+//                elbowBrake = false;
+
+            if (elbowBrake) {
+                int elbowBrakePosition = elbow.getCurrentPosition();
+                elbow.setTargetPosition(elbowBrakePosition);
+                elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+            else {
+                elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                elbow.setPower(elbowPower);
             }
 
-            if (gamepad2.right_stick_button) {
-                if (!shoulderBrake) {
-                    shoulder.setTargetPosition(shoulderCurrentPosition);
-                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            //if right stick button has been toggled
+//            if(sBrake.status(gamepad2.right_stick_button) == Toggle.Status.COMPLETE & !shoulderBrake)
+//                shoulderBrake = true;
+//            if(sBrake.status(gamepad2.right_stick_button) == Toggle.Status.COMPLETE & shoulderBrake)
+//                shoulderBrake = false;
+
+            if (shoulderBrake) {
+                int shoulderBrakePosition = shoulder.getCurrentPosition();
+                shoulder.setTargetPosition(shoulderBrakePosition);
+                shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+            else {
+                shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                shoulder.setPower(shoulderPower);
+            }
+
+
+            if (gamepad2.left_stick_button & !elbowBrake) {
+                    elbowBrake = true;
+                }
+            else if (gamepad2.left_stick_button & elbowBrake) {
+                elbowBrake = false;
+            }
+
+            if (gamepad2.right_stick_button & !shoulderBrake) {
                     shoulderBrake = true;
                 }
-                else{
-                    shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    shoulderBrake = false;
-                }
+             else if (gamepad2.right_stick_button & shoulderBrake) {
+                shoulderBrake = false;
             }
 
             // Returning Telemetry Data
@@ -167,8 +236,8 @@ public class greenBotTest extends LinearOpMode {
             telemetry.addData("Intended Power", "left (%.2f), right (%.2f)"    , leftDirection, rightDirection   );
             telemetry.addData("Chassis Motors", "left (%.2f), right (%.2f)"    , leftPower, rightPower           );
             telemetry.addData("Claw"          , "Position: (%.2f)"             , claw.getPosition()              );
-            telemetry.addData("Shoulder"      , "Power: (%.2f), Position: (%i), Brake: (%b)", shoulderPower, shoulderCurrentPosition, shoulderBrake);
-            telemetry.addData("Elbow"         , "Power: (%.2f), Position: (%i), Brake: (%b)", elbowPower, elbowCurrentPosition, elbowBrake);
+            telemetry.addData("Shoulder"      , "Power: (%.2f), Position: (%d), Target Position: (%d), Brake: (%b)", shoulderPower, shoulderCurrentPosition, shoulder.getTargetPosition(), shoulderBrake);
+            telemetry.addData("Elbow"         , "Power: (%.2f), Position: (%d), Target Position: (%d), Brake: (%b)", elbowPower, elbowCurrentPosition, elbow.getTargetPosition(), elbowBrake);
             telemetry.update();
         }
     }
