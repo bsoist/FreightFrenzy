@@ -163,7 +163,6 @@ public class greenBotTest extends LinearOpMode {
             if (gamepad2.a) {
                 claw.setPosition( 1.0);
             }
-
             else if (gamepad2.y) {
                 claw.setPosition(-1.0);
             }

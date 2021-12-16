@@ -51,6 +51,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
     private DcMotor elbow    = null;
     private DcMotor shoulder = null;
     private Servo   claw     = null;
+    private DcMotor ttMotor = null;
 
     /**
      * Manages toggling an action.
@@ -70,6 +71,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
         elbow    = hardwareMap.get(DcMotor.class,   "elbowArmMotor");
         shoulder = hardwareMap.get(DcMotor.class,"shoulderArmMotor");
         claw     = hardwareMap.get(Servo.  class,            "claw");
+        ttMotor     = hardwareMap.get(DcMotor.class,"turnTableMotor");
 
         bLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -86,6 +88,7 @@ public class BasicOpMode_Linear extends LinearOpMode {
         claw.setPosition(-1.0);
         boolean elbowBrake = false;
         boolean shoulderBrake = false;
+        boolean turnTable = false;
 
 
         waitForStart();
@@ -93,14 +96,33 @@ public class BasicOpMode_Linear extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            //claw controls
+            if (gamepad2.a) {
+                claw.setPosition( 1.0);
+            }
+
+            else if (gamepad2.y) {
+                claw.setPosition(-1.0);
+            }
+            //turn table motor controls
+            if (gamepad2.b & !turnTable) {
+                turnTable = true;
+                ttMotor.setPower(1);
+            }
+            else if (gamepad2.b & turnTable) {
+                ttMotor.setPower((0));
+                turnTable = false;
+            }
+
+            int elbowCurrentPosition    = elbow   .getCurrentPosition();
+            int shoulderCurrentPosition = shoulder.getCurrentPosition();
+            int bLeftCP                 = bLeft   .getCurrentPosition();
+            int bRightCP                = bRight  .getCurrentPosition();
+            int fLeftCP                 = fLeft   .getCurrentPosition();
+            int fRightCP                = fRight  .getCurrentPosition();
 
 //            double leftPower;
 //            double rightPower;
-            int elbowCurrentPosition    =    elbow.getCurrentPosition();
-            int shoulderCurrentPosition = shoulder.getCurrentPosition();
-            int shoulderBrakePosition = 0;
-            int elbowBrakePositon = 0;
-
             double x =  gamepad1.right_stick_x;
             double y =  -gamepad1.right_stick_y;
             double motorVelocity = -gamepad1.left_stick_y * 2500;
@@ -119,6 +141,29 @@ public class BasicOpMode_Linear extends LinearOpMode {
 //            bRight.setPower(rightPower);
 //            fLeft.setPower((leftPower));
 //            fRight.setPower(rightPower);
+
+            //DIY ZeroPowerBehavior.Brake
+//            if (leftVelocity == 0) {
+//                bLeft.setTargetPosition(bLeftCP);
+//                fLeft.setTargetPosition(fLeftCP);
+//                bLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                fLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            }
+//            else {
+//                bLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//                fLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//            }
+//
+//            if (rightVelocity == 0) {
+//                bRight.setTargetPosition(bRightCP);
+//                fRight.setTargetPosition(fRightCP);
+//                bRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                fRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//            }
+//            else {
+//                bRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//                fRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//            }
             bLeft.setVelocity(leftVelocity);
             fLeft.setVelocity(leftVelocity);
             bRight.setVelocity(rightVelocity);
@@ -126,13 +171,16 @@ public class BasicOpMode_Linear extends LinearOpMode {
 
             //elbow brake conditions
             if (gamepad2.left_stick_button & !elbowBrake) {
+                elbow.setTargetPosition(elbowCurrentPosition);
                 elbowBrake = true;
+
             }
             else if (gamepad2.left_stick_button & elbowBrake) {
                 elbowBrake = false;
             }
             //shoulder brake conditions
             if (gamepad2.right_stick_button & !shoulderBrake) {
+                shoulder.setTargetPosition(shoulderCurrentPosition);
                 shoulderBrake = true;
             }
             else if (gamepad2.right_stick_button & shoulderBrake) {
@@ -141,8 +189,6 @@ public class BasicOpMode_Linear extends LinearOpMode {
 
             //the brakes themselves
             if (elbowBrake) {
-                elbowBrakePositon = elbowCurrentPosition;
-                elbow.setTargetPosition(elbowBrakePositon);
                 elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             else {
@@ -151,8 +197,6 @@ public class BasicOpMode_Linear extends LinearOpMode {
             }
 
             if (shoulderBrake) {
-                shoulderBrakePosition = shoulderCurrentPosition;
-                shoulder.setTargetPosition(shoulderBrakePosition);
                 shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             }
             else {
