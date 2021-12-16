@@ -104,6 +104,8 @@ public class Archmere extends LinearOpMode {
     private DcMotor bRight = null;
     private DcMotor fLeft = null;
     private DcMotor fRight = null;
+    private DcMotor ttMotor = null;
+
 
     //double leftPower = 0;
     //double rightPower = 0;
@@ -138,6 +140,7 @@ public class Archmere extends LinearOpMode {
         bRight = hardwareMap.get(DcMotor.class, "backRight");
         fLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         fRight = hardwareMap.get(DcMotor.class, "frontRight");
+        ttMotor = hardwareMap.get(DcMotor  .class,"turnTableMotor");
 
         bLeft.setDirection(DcMotor.Direction.REVERSE);
         fLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -232,10 +235,9 @@ public class Archmere extends LinearOpMode {
                 sleep(3000);
 //                 Move to Shipping Hub...
                 runMotors(1.0, -1.0, speed, 300);//arc right into disk
-                //run disk motor 2000 ms
-                //done
-
-
+                brake(100);
+                ttMotor.setPower(1);
+                sleep(2000);
             }
         }
     }

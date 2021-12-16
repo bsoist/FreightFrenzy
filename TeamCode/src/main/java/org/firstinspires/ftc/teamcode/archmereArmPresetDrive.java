@@ -42,10 +42,10 @@ public class archmereArmPresetDrive extends LinearOpMode {
         bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         elbow.setDirection(DcMotorSimple.Direction.REVERSE);
         bRight.setDirection(DcMotor.Direction.REVERSE);
@@ -54,10 +54,11 @@ public class archmereArmPresetDrive extends LinearOpMode {
         double armSpeed = .75;
         double elbowPower = 0;
         double shoulderPower = 0;
-        claw.setPosition(-1.0);
+        claw.setPosition(1.0);
         boolean elbowBrake = false;
         boolean shoulderBrake = false;
-        boolean turnTable = false;
+        boolean redturnTable = false;
+        boolean blueturnTable = false;
         boolean topLevel = false;
         boolean midLevel = false;
         boolean botLevel = false;
@@ -77,20 +78,30 @@ public class archmereArmPresetDrive extends LinearOpMode {
                 claw.setPosition( 1.0);
             }
             else if (gamepad2.y) {
-                claw.setPosition(.2);
-            }
-            else if (gamepad2.y & autoControl) {
                 claw.setPosition(.4);
             }
+//            else if (gamepad2.y &c
+//            autoControl) {
+//                claw.setPosition(.4);
+//            }
 
             //turn table motor controls
-            if (gamepad2.b & !turnTable) {
-                turnTable = true;
+            if (gamepad2.b & !redturnTable) {
+                redturnTable = true;
+                ttMotor.setPower(-1);
+            }
+            else if (gamepad2.b & redturnTable) {
+                ttMotor.setPower((0));
+                redturnTable = false;
+            }
+
+            if (gamepad2.x & !blueturnTable) {
+                blueturnTable = true;
                 ttMotor.setPower(1);
             }
-            else if (gamepad2.b & turnTable) {
+            else if (gamepad2.x & blueturnTable) {
                 ttMotor.setPower((0));
-                turnTable = false;
+                blueturnTable = false;
             }
 
             if (gamepad2.dpad_up) { // TOP    > shoulder = -50 , elbow = -185
@@ -98,19 +109,22 @@ public class archmereArmPresetDrive extends LinearOpMode {
                 midLevel = false;
                 botLevel = false;
                 pickupLevel = false;
+                wobbleLevel = false;
                 autoControl = true;
             }
             else if (gamepad2.dpad_right) { // MID    > shoulder = -150, elbow = -7
                 topLevel = false;
                 midLevel = true;
                 botLevel = false;
+                wobbleLevel = false;
                 pickupLevel = false;
                 autoControl = true;
             }
             else if (gamepad2.dpad_down) { // BOT    > shoulder =  145, elbow = -215
                 topLevel = false;
                 midLevel = false;
-                botLevel = true;
+                wobbleLevel = true;
+
                 pickupLevel = false;
                 autoControl = true;
             }
@@ -120,18 +134,19 @@ public class archmereArmPresetDrive extends LinearOpMode {
                 botLevel = false;
                 pickupLevel = true;
                 autoControl = true;
+                wobbleLevel = false;
             }
             else if (gamepad2.left_bumper) { //AUTO CONTROL OFF
                 topLevel = false;
                 midLevel = false;
                 botLevel = false;
-
                 pickupLevel = false;
+                wobbleLevel = false;
                 autoControl = false;
             }
             if (topLevel) {
                 shoulder.setTargetPosition(0);
-                elbow.setTargetPosition(170);
+                elbow.setTargetPosition(185);
             }
             else if (midLevel) {
                 shoulder.setTargetPosition(16);

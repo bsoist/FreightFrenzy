@@ -1,5 +1,7 @@
 org/firstinspires/ftc/teamcode/TensorFlowObjectDetectionWebcam.java
  org.firstinspires.ftc.teamcode.TensorFlowObjectDetectionWebcam
+org/firstinspires/ftc/teamcode/presetCalibration.java
+ org.firstinspires.ftc.teamcode.presetCalibration
 org/firstinspires/ftc/teamcode/archmereArmPresetDrive.java
  org.firstinspires.ftc.teamcode.archmereArmPresetDrive
 org/firstinspires/ftc/teamcode/greenBotTest.java
@@ -10,5 +12,7 @@ org/firstinspires/ftc/teamcode/BuildConfig.java
  org.firstinspires.ftc.teamcode.BuildConfig
 org/firstinspires/ftc/teamcode/VuforiaFieldNavigationWebcam.java
  org.firstinspires.ftc.teamcode.VuforiaFieldNavigationWebcam
+org/firstinspires/ftc/teamcode/Archmere.java
+ org.firstinspires.ftc.teamcode.Archmere
 org/firstinspires/ftc/teamcode/BasicOpMode_Linear.java
  org.firstinspires.ftc.teamcode.BasicOpMode_Linear
