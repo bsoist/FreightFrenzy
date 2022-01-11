@@ -27,21 +27,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.auto;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-
 
 import java.util.List;
 
@@ -55,9 +51,9 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@TeleOp(name = "Webcam Auto", group = "Concept")
+@TeleOp(name = "Detect,Disk,Stop", group = "Concept")
 // @Disabled
-public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
+public class Archmere extends LinearOpMode {
   /* Note: This sample uses the all-objects Tensor Flow model (FreightFrenzy_BCDM.tflite), which contains
    * the following 4 detectable objects
    *  0: Ball,
@@ -108,10 +104,12 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
     private DcMotor bRight = null;
     private DcMotor fLeft = null;
     private DcMotor fRight = null;
+    private DcMotor ttMotor = null;
+
 
     //double leftPower = 0;
     //double rightPower = 0;
-    double speed = .2;
+    double speed = .4;
     long scale = 4;
 
 
@@ -142,6 +140,7 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
         bRight = hardwareMap.get(DcMotor.class, "backRight");
         fLeft = hardwareMap.get(DcMotor.class, "frontLeft");
         fRight = hardwareMap.get(DcMotor.class, "frontRight");
+        ttMotor = hardwareMap.get(DcMotor  .class,"turnTableMotor");
 
         bLeft.setDirection(DcMotor.Direction.REVERSE);
         fLeft.setDirection(DcMotor.Direction.REVERSE);
@@ -235,67 +234,10 @@ public class TensorFlowObjectDetectionWebcam extends LinearOpMode {
                 }
                 sleep(3000);
 //                 Move to Shipping Hub...
-                runMotors(1.0, 0.4, speed, 1000);//arc right
-//                leftPower    = 1.0;
-//                rightPower   = 0.4;
-//                bLeft.setPower (leftPower  * speed);
-//                bRight.setPower(rightPower * speed);
-//                fLeft.setPower (leftPower  * speed);
-//                fRight.setPower(rightPower * speed);
-//                sleep(1000);
-                brake(1000);
-
-                runMotors(0.6, 1.0, speed, 1000);//arc left to shipping hub
-//                leftPower    = 0.6;
-//                rightPower   = 1.0;
-//                bLeft.setPower (leftPower  * speed);
-//                bRight.setPower(rightPower * speed);
-//                fLeft.setPower (leftPower  * speed);
-//                fRight.setPower(rightPower * speed);
-//                sleep(1000);
-                brake(1000);
-
-//                sleep(5000);//code to drop freight...
-//
-//                if(bottomLevel){
-//
-//                }
-//                if(middleLevel){
-//
-//                }
-//                if(topLevel){
-//
-//                }
-//                // Move into Warehouse completely, pick up 1 freight...
-//                runMotors(1,0, speed, 600);
-//                brake(1000);
-//                runMotors(-1,-1,speed, 700);
-//                brake(1000);
-//                runMotors(-1, 1, speed, 700);
-//                brake(1000);
-//                runMotors(1,1, speed, 1000);// Fully enter Warehouse
-//                brake(1000);
-//
-//                //pickup freight...
-//
-//                // Move back to Shipping Hub...
-//                runMotors(-1,-1, speed, 1000); //Fully leave Warehouse
-//                brake(1000);
-//                runMotors(1,-1,speed,700);
-//                brake(1000);
-//                runMotors(1,1,speed,1000);//At shipping hub
-//                brake(1000);
-//                // Do whatever level is quickest (bottomLevel, middleLevel, topLevel)
-//
-//
-//                // Move back into Warehouse completely, park
-//                runMotors(-1,-1, speed, 1000);
-//                brake(1000);
-//                runMotors(-1,1,speed,700);
-//                brake(1000);
-//                runMotors(1,1,speed,1000);//Fully enter Warehouse
-//                brake(2000);
-
+                runMotors(1.0, -1.0, speed, 300);//arc right into disk
+                brake(100);
+                ttMotor.setPower(1);
+                sleep(2000);
             }
         }
     }
