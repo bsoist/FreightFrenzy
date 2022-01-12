@@ -9,8 +9,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
-@TeleOp(name="Early Drive + autoControl", group="--")
-@Disabled
+@TeleOp(name="MainRobotBasicDrive+AutoControl Test", group="--")
+//@Disabled
 public class ArmPresetDrive extends LinearOpMode {
 
     // Declare OpMode members.
@@ -44,8 +44,8 @@ public class ArmPresetDrive extends LinearOpMode {
         fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         elbow.setDirection(DcMotorSimple.Direction.REVERSE);
         bRight.setDirection(DcMotor.Direction.REVERSE);
@@ -76,11 +76,12 @@ public class ArmPresetDrive extends LinearOpMode {
             if (gamepad2.a) {
                 claw.setPosition(1.0);
             } else if (gamepad2.y) {
-                claw.setPosition(.2);
-            } else if (gamepad2.y & autoControl) {
-                claw.setPosition(.4);
+                if (autoControl) {
+                    claw.setPosition(.4);
+                } else {
+                    claw.setPosition(.2);
+                }
             }
-
             //turn table motor controls
             if (gamepad2.b & !turnTable) {
                 turnTable = true;
@@ -137,31 +138,44 @@ public class ArmPresetDrive extends LinearOpMode {
                 pickupLevel = true;
                 autoControl = true;
             }
+            else if (lastPreset == "left_bumper")
+            {
+                topLevel = false;
+                midLevel = false;
+                botLevel = false;
+                pickupLevel = false;
+                autoControl = false;
+            }
+
             if (topLevel) {
                 shoulder.setTargetPosition(0);
                 elbow.setTargetPosition(170);
-            } else if (midLevel) {
+            }
+            else if (midLevel) {
                 shoulder.setTargetPosition(16);
                 elbow.setTargetPosition(170);
-            } else if (wobbleLevel) {
+            }
+            else if (wobbleLevel) {
                 shoulder.setTargetPosition(0);
                 elbow.setTargetPosition(250);
-            } else if (botLevel) {
+            }
+            else if (botLevel) {
                 shoulder.setTargetPosition(248);
                 elbow.setTargetPosition(5);
-            } else if (pickupLevel) {
-                shoulder.setTargetPosition(270);
-                elbow.setTargetPosition(5);
-                sleep(500);
-                claw.setPosition(0);
             }
+            else if (pickupLevel) {
+                    shoulder.setTargetPosition(270);
+                    elbow.setTargetPosition(5);
+                }
+
             if (autoControl) {
                 shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 shoulder.setVelocity(500);
                 elbow.setVelocity(500);
 
-            } else {
+            }
+            else {
                 shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 shoulder.setPower(shoulderPower);
