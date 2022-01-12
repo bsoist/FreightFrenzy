@@ -74,10 +74,17 @@ public class archmereArmPresetDrive extends LinearOpMode {
             //claw controls
             if (gamepad2.a) {
                 claw.setPosition(1.0);
-            } else if (gamepad2.y) {
+            }
+            else if (gamepad2.y) {
                 if (autoControl) {
-                    claw.setPosition(.4);
-                } else {
+                    if (midLevel || botLevel) {
+                        claw.setPosition(.8);
+                    }
+                    else {
+                        claw.setPosition(.4);
+                    }
+                }
+                else {
                     claw.setPosition(.2);
                 }
             }
