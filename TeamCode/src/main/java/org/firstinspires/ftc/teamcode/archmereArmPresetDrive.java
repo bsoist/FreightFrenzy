@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -23,6 +20,7 @@ public class archmereArmPresetDrive extends LinearOpMode {
     private DcMotor shoulder = null;
     private Servo   claw     = null;
     private DcMotor ttMotor = null;
+    DigitalChannel magLimit;
 
     @Override
     public void runOpMode() {
@@ -37,15 +35,14 @@ public class archmereArmPresetDrive extends LinearOpMode {
         DcMotorEx shoulder  = hardwareMap.get(DcMotorEx.class,"shoulderArmMotor");
         claw                = hardwareMap.get(Servo    .class,"claw"            );
         ttMotor             = hardwareMap.get(DcMotor  .class,"turnTableMotor"  );
+        magLimit = hardwareMap.get(DigitalChannel.class, "magLimitSwitch");
+
+        magLimit.setMode(DigitalChannel.Mode.INPUT);
 
         bLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         bRight.setDirection(DcMotor.Direction.REVERSE);
         fRight.setDirection(DcMotor.Direction.REVERSE);
@@ -63,8 +60,23 @@ public class archmereArmPresetDrive extends LinearOpMode {
         boolean wobbleLevel = false;
         boolean pickupLevel = false;
         boolean autoControl = false;
+        int Sdelta = 1504;
+        int Edelta = 394;
+        boolean calibrate = false;
 
+        shoulder.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
+        shoulder.setPower(.5);
 
+        while (!calibrate) {
+            if (magLimit.getState()){
+                shoulder.setPower(0);
+                calibrate = true;
+            }
+        }
+        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         waitForStart();
         runtime.reset();
@@ -134,25 +146,30 @@ public class archmereArmPresetDrive extends LinearOpMode {
                 pickupLevel = false;
                 autoControl = false;
             }
+
             if (topLevel) { //good to go for ths meet
-                shoulder.setTargetPosition(0);
-                elbow.setTargetPosition(-160);
+                shoulder.setTargetPosition(0 - Sdelta);
+                elbow.setTargetPosition(-160 - Edelta);
             }
             else if (midLevel) { //good to go for ths meet
-                shoulder.setTargetPosition(0);
-                elbow.setTargetPosition(-240);
+                shoulder.setTargetPosition(0 - Sdelta);
+                elbow.setTargetPosition(-240 - Edelta);
             }
             else if (wobbleLevel) {
-                shoulder.setTargetPosition(0);
-                elbow.setTargetPosition(250);
+                shoulder.setTargetPosition(0 - Sdelta);
+                elbow.setTargetPosition(250 - Edelta);
             }
             else if (botLevel) {
-                shoulder.setTargetPosition(248);
-                elbow.setTargetPosition(5);
+                shoulder.setTargetPosition(248 - Sdelta);
+                elbow.setTargetPosition(5 - Edelta);
             }
             else if (pickupLevel) { //good to go for ths meet
-                shoulder.setTargetPosition(-2057);
-                elbow.setTargetPosition(-135);
+                shoulder.setTargetPosition(-2057 - Sdelta);
+                elbow.setTargetPosition(-135 - Edelta);
+                sleep(500);
+                if (gamepad2.y){
+                    claw.setPosition(0);
+                }
             }
             if (autoControl) {
                 shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -308,6 +325,14 @@ public class archmereArmPresetDrive extends LinearOpMode {
                     elbowPower   , elbowCurrentPosition   , elbow.getTargetPosition()    , elbowBrake  );
 
             telemetry.addData("autoControl"         , "top: (%b), mid: (%b), bot: (%b), pickup: (%b), autoControl: (%b)", topLevel, midLevel, botLevel, pickupLevel, autoControl);
+
+            if (magLimit.getState() == true) {
+                telemetry.addData("MagLimit", "False");
+            }
+            else {
+                telemetry.addData("MagLimit", "True");
+            }
+
             telemetry.update();
         }
     }

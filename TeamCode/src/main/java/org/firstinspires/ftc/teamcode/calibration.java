@@ -41,8 +41,6 @@ public class calibration extends LinearOpMode {
         bRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         fRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         elbow.setMode((DcMotor.RunMode.RUN_USING_ENCODER));
         shoulder.setMode((DcMotor.RunMode.RUN_USING_ENCODER));
         // NEED TO PUT BOTH ARMS POINTING STRAIGHT UP INTO THE AIR (PERPENDICULAR TO THE CHASSIS/GROUND) TO RESET CORRECTLY FOR PRESET POSITIONS
@@ -64,12 +62,16 @@ public class calibration extends LinearOpMode {
         boolean wobbleLevel = false;
         boolean pickupLevel = false;
         boolean autoControl = false;
+        boolean trueZero = false;
+        int Sdelta = 1504;
+        int Edelta = 394;
 
-        waitForStart();
+        waitForStart(); //Shoulderdelta = left 1504 ticks (FROM THE RIGHT), elbowdelta = left 394 ticks (FROM THE LEFT)
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            shoulder.setPower(.7);
             if (gamepad2.dpad_up) { // TOP    > shoulder = -50 , elbow = -185
                 topLevel = true;
                 midLevel = false;
@@ -105,30 +107,45 @@ public class calibration extends LinearOpMode {
                 pickupLevel = false;
                 autoControl = false;
             }
-            if (topLevel) {
-                shoulder.setTargetPosition(0);
-                elbow.setTargetPosition(170);
+            else if (gamepad2.y) {
+                topLevel = false;
+                midLevel = false;
+                botLevel = false;
+                pickupLevel = false;
+                trueZero = true;
+                autoControl = true;
             }
-            else if (midLevel) {
-                shoulder.setTargetPosition(16);
-                elbow.setTargetPosition(170);
+            if (topLevel) { //good to go for ths meet
+                shoulder.setTargetPosition(0 - Sdelta);
+                elbow.setTargetPosition(-160 - Edelta);
+            }
+            else if (midLevel) { //good to go for ths meet
+                shoulder.setTargetPosition(0 - Sdelta);
+                elbow.setTargetPosition(-240 - Edelta);
             }
             else if (wobbleLevel) {
-                shoulder.setTargetPosition(0);
-                elbow.setTargetPosition(250);
+                shoulder.setTargetPosition(0 - Sdelta);
+                elbow.setTargetPosition(250 - Edelta);
             }
             else if (botLevel) {
-                shoulder.setTargetPosition(248);
-                elbow.setTargetPosition(5);
+                shoulder.setTargetPosition(248 - Sdelta);
+                elbow.setTargetPosition(5 - Edelta);
             }
-            else if (pickupLevel) {
-                shoulder.setTargetPosition(270);
-                elbow.setTargetPosition(5);
+            else if (pickupLevel) { //good to go for ths meet
+                shoulder.setTargetPosition(-2057 - Sdelta);
+                elbow.setTargetPosition(-135 - Edelta);
                 sleep(500);
                 if (gamepad2.y){
                     claw.setPosition(0);
                 }
             }
+            else if (trueZero) {
+                shoulder.setTargetPosition(0 - Sdelta);
+                elbow.setTargetPosition(0 - Edelta);
+            }
+
+            elbowPower    = Range.clip(gamepad2.left_stick_y , -1.0, 1.0) * armSpeed;
+            shoulderPower = Range.clip(gamepad2.right_stick_y, -1.0, 1.0) * armSpeed;
 
             if (autoControl) {
                 shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -142,6 +159,13 @@ public class calibration extends LinearOpMode {
                 elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 shoulder.setPower(shoulderPower);
                 elbow.setPower(elbowPower);
+            }
+
+            if (gamepad2.right_bumper){
+                elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             }
 
             int elbowCurrentPosition    = elbow   .getCurrentPosition();
