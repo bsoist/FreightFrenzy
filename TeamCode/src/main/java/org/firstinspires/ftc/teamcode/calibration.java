@@ -71,7 +71,6 @@ public class calibration extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            shoulder.setPower(.7);
             if (gamepad2.dpad_up) { // TOP    > shoulder = -50 , elbow = -185
                 topLevel = true;
                 midLevel = false;

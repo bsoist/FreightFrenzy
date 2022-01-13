@@ -64,19 +64,22 @@ public class archmereArmPresetDrive extends LinearOpMode {
         int Edelta = 394;
         boolean calibrate = false;
 
-        shoulder.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
-        shoulder.setPower(.5);
-
         while (!calibrate) {
-            if (magLimit.getState()){
+            if (!magLimit.getState()){
+                telemetry.addData("MagLimit", "Pressed");
+                telemetry.update();
                 shoulder.setPower(0);
                 calibrate = true;
             }
+            telemetry.addData("MagLimit", "Not Pressed");
+            telemetry.update();
+            shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            shoulder.setPower(.15);
         }
         elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         waitForStart();
         runtime.reset();
