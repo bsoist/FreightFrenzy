@@ -1,17 +1,14 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.teleop;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.*;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
-@TeleOp(name="MainRobotBasicDrive+AutoControl Test", group="--")
+@TeleOp(name="Event Drive", group="--")
 //@Disabled
-public class ArmPresetDrive extends LinearOpMode {
+public class EventDrive extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -19,35 +16,34 @@ public class ArmPresetDrive extends LinearOpMode {
     private DcMotor bRight = null;
     private DcMotor fLeft = null;
     private DcMotor fRight = null;
-    private DcMotor elbow = null;
+    private DcMotor elbow    = null;
     private DcMotor shoulder = null;
-    private Servo claw = null;
+    private Servo   claw     = null;
     private DcMotor ttMotor = null;
+    DigitalChannel magLimit;
 
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        DcMotorEx bLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
-        DcMotorEx bRight = hardwareMap.get(DcMotorEx.class, "backRight");
-        DcMotorEx fLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
-        DcMotorEx fRight = hardwareMap.get(DcMotorEx.class, "frontRight");
-        DcMotorEx elbow = hardwareMap.get(DcMotorEx.class, "elbowArmMotor");
-        DcMotorEx shoulder = hardwareMap.get(DcMotorEx.class, "shoulderArmMotor");
-        claw = hardwareMap.get(Servo.class, "claw");
-        ttMotor = hardwareMap.get(DcMotor.class, "turnTableMotor");
+        DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
+        DcMotorEx bRight    = hardwareMap.get(DcMotorEx.class,"backRight"       );
+        DcMotorEx fLeft     = hardwareMap.get(DcMotorEx.class,"frontLeft"       );
+        DcMotorEx fRight    = hardwareMap.get(DcMotorEx.class,"frontRight"      );
+        DcMotorEx elbow     = hardwareMap.get(DcMotorEx.class,"elbowArmMotor"   );
+        DcMotorEx shoulder  = hardwareMap.get(DcMotorEx.class,"shoulderArmMotor");
+        claw                = hardwareMap.get(Servo    .class,"claw"            );
+        ttMotor             = hardwareMap.get(DcMotor  .class,"turnTableMotor"  );
+        magLimit = hardwareMap.get(DigitalChannel.class, "magLimitSwitch");
+
+        magLimit.setMode(DigitalChannel.Mode.INPUT);
 
         bLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        elbow.setDirection(DcMotorSimple.Direction.REVERSE);
         bRight.setDirection(DcMotor.Direction.REVERSE);
         fRight.setDirection(DcMotor.Direction.REVERSE);
 
@@ -64,82 +60,89 @@ public class ArmPresetDrive extends LinearOpMode {
         boolean wobbleLevel = false;
         boolean pickupLevel = false;
         boolean autoControl = false;
+        int Sdelta = 1504;
+        int Edelta = 394;
+        boolean calibrate = false;
 
+//        while (!calibrate) {
+//            if (!magLimit.getState()){
+//                telemetry.addData("MagLimit", "Pressed");
+//                telemetry.update();
+//                shoulder.setPower(0);
+//                calibrate = true;
+//            }
+//            telemetry.addData("MagLimit", "Not Pressed");
+//            telemetry.update();
+//            shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//            shoulder.setPower(.15);
+//        }
+//        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         waitForStart();
         runtime.reset();
 
-        String lastPreset = "";
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             //claw controls
             if (gamepad2.a) {
                 claw.setPosition(1.0);
-            } else if (gamepad2.y) {
+            }
+            else if (gamepad2.y) {
                 if (autoControl) {
-                    claw.setPosition(.4);
-                } else {
+                    if (midLevel || botLevel) {
+                        claw.setPosition(.8);
+                    }
+                    else {
+                        claw.setPosition(.4);
+                    }
+                }
+                else {
                     claw.setPosition(.2);
                 }
             }
+
             //turn table motor controls
             if (gamepad2.b & !turnTable) {
                 turnTable = true;
                 ttMotor.setPower(1);
-            } else if (gamepad2.b & turnTable) {
+            }
+            else if (gamepad2.b & turnTable) {
                 ttMotor.setPower((0));
                 turnTable = false;
             }
 
-            if (gamepad2.dpad_up) { // TOP    > shoulder = -50 , elbow = -185
-                lastPreset = "dpad_up";
-            } else if (gamepad2.dpad_right) { // MID    > shoulder = -150, elbow = -7
-                lastPreset = "dpad_right";
-            } else if (gamepad2.dpad_down) { // BOT    > shoulder =  145, elbow = -215
-                lastPreset = "dpad_down";
-            } else if (gamepad2.dpad_left) { // PICKUP > shoulder = 250, elbow = -330
-                lastPreset = "dpad_left";
-            } else if (gamepad2.left_bumper) { //AUTO CONTROL OFF
-                lastPreset = "left_bumper";
-            }
-            else if (lastPreset == "") {
-                lastPreset = "dpad_up";
-            }
-
-            if (lastPreset == "dpad_up")
-            {
+            if (gamepad2.dpad_up) { // TOP
                 topLevel = true;
                 midLevel = false;
                 botLevel = false;
                 pickupLevel = false;
                 autoControl = true;
             }
-            else if (lastPreset == "dpad_right")
-            {
+            else if (gamepad2.dpad_right) { // MID
                 topLevel = false;
                 midLevel = true;
                 botLevel = false;
                 pickupLevel = false;
                 autoControl = true;
             }
-            else if (lastPreset == "dpad_down")
-            {
+            else if (gamepad2.dpad_down) { // BOT/WOBBLE
                 topLevel = false;
                 midLevel = false;
                 botLevel = true;
                 pickupLevel = false;
                 autoControl = true;
             }
-            else if (lastPreset == "dpad_left")
-            {
+            else if (gamepad2.dpad_left) { // PICKUP
                 topLevel = false;
                 midLevel = false;
                 botLevel = false;
                 pickupLevel = true;
                 autoControl = true;
             }
-            else if (lastPreset == "left_bumper")
-            {
+            else if (gamepad2.left_bumper) { //AUTO CONTROL OFF
                 topLevel = false;
                 midLevel = false;
                 botLevel = false;
@@ -147,31 +150,34 @@ public class ArmPresetDrive extends LinearOpMode {
                 autoControl = false;
             }
 
-            if (topLevel) {
-                shoulder.setTargetPosition(0);
-                elbow.setTargetPosition(170);
+            if (topLevel) { //good to go for ths meet
+                shoulder.setTargetPosition(0 - Sdelta);
+                elbow.setTargetPosition(-160 - Edelta);
             }
-            else if (midLevel) {
-                shoulder.setTargetPosition(16);
-                elbow.setTargetPosition(170);
+            else if (midLevel) { //good to go for ths meet
+                shoulder.setTargetPosition(0 - Sdelta);
+                elbow.setTargetPosition(-240 - Edelta);
             }
-            else if (wobbleLevel) {
-                shoulder.setTargetPosition(0);
-                elbow.setTargetPosition(250);
+            else if (wobbleLevel) { //not done
+                shoulder.setTargetPosition(0 - Sdelta);
+                elbow.setTargetPosition(250 - Edelta);
             }
-            else if (botLevel) {
-                shoulder.setTargetPosition(248);
-                elbow.setTargetPosition(5);
+            else if (botLevel) { //not done
+                shoulder.setTargetPosition(248 - Sdelta);
+                elbow.setTargetPosition(5 - Edelta);
             }
-            else if (pickupLevel) {
-                    shoulder.setTargetPosition(270);
-                    elbow.setTargetPosition(5);
+            else if (pickupLevel) { //good to go for ths meet
+                shoulder.setTargetPosition(-2057 - Sdelta);
+                elbow.setTargetPosition(-135 - Edelta);
+                sleep(500);
+                if (gamepad2.y){
+                    claw.setPosition(.3);
                 }
-
+            }
             if (autoControl) {
                 shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                shoulder.setVelocity(500);
+                shoulder.setVelocity(1200);
                 elbow.setVelocity(500);
 
             }
@@ -182,7 +188,7 @@ public class ArmPresetDrive extends LinearOpMode {
                 elbow.setPower(elbowPower);
             }
 
-            int elbowCurrentPosition = elbow.getCurrentPosition();
+            int elbowCurrentPosition    = elbow   .getCurrentPosition();
             int shoulderCurrentPosition = shoulder.getCurrentPosition();
 //            int bLeftCP                 = bLeft   .getCurrentPosition();
 //            int bRightCP                = bRight  .getCurrentPosition();
@@ -191,18 +197,18 @@ public class ArmPresetDrive extends LinearOpMode {
 
 //            double leftPower;
 //            double rightPower;
-            double x = gamepad1.right_stick_x;
-            double y = -gamepad1.right_stick_y;
+            double x =  gamepad1.right_stick_x;
+            double y =  -gamepad1.right_stick_y;
             double motorVelocity = -gamepad1.left_stick_y * 2500;
             double leftDirection = y + x;
             double rightDirection = y - x;
-            double leftVelocity = leftDirection * motorVelocity;
-            double rightVelocity = rightDirection * motorVelocity;
+            double leftVelocity   = leftDirection * motorVelocity;
+            double rightVelocity   = rightDirection * motorVelocity;
 //            double speed = Range.clip(gamepad1.left_stick_y, -1.0, 0)
 //            leftPower    = Range.clip(leftDirection * speed, -1.0, 1.0);
 //            rightPower   = Range.clip(rightDirection * speed, -1.0, 1.0);
 
-            elbowPower = Range.clip(gamepad2.left_stick_y, -1.0, 1.0) * armSpeed;
+            elbowPower    = Range.clip(gamepad2.left_stick_y , -1.0, 1.0) * armSpeed;
             shoulderPower = Range.clip(gamepad2.right_stick_y, -1.0, 1.0) * armSpeed;
 
 //            bLeft.setPower(leftPower);
@@ -238,31 +244,43 @@ public class ArmPresetDrive extends LinearOpMode {
             fRight.setVelocity(rightVelocity);
 
             //elbow brake conditions
-            elbow.setTargetPosition(elbowCurrentPosition);
-            elbowBrake = true;
+            if (gamepad2.left_stick_button & !elbowBrake) {
+                elbow.setTargetPosition(elbowCurrentPosition);
+                elbowBrake = true;
 
-
+            }
+            else if (gamepad2.left_stick_button & elbowBrake) {
+                elbowBrake = false;
+            }
             //shoulder brake conditions
-            shoulder.setTargetPosition(shoulderCurrentPosition);
-            shoulderBrake = true;
-
-
-
-            if (elbowBrake) { // brakes only work if using arm manually
-                elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elbow.setVelocity(400);
-            } else {
-                elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                elbow.setPower(elbowPower);
+            if (gamepad2.right_stick_button & !shoulderBrake) {
+                shoulder.setTargetPosition(shoulderCurrentPosition);
+                shoulderBrake = true;
             }
-            if (shoulderBrake) {
-                shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                shoulder.setVelocity(400);
-            } else {
-                shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                shoulder.setPower(shoulderPower);
+            else if (gamepad2.right_stick_button & shoulderBrake) {
+                shoulderBrake = false;
             }
 
+
+            if (!autoControl) {
+                if (elbowBrake) { // brakes only work if using arm manually
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elbow.setVelocity(1000);
+                }
+                else {
+                    elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    elbow.setPower(elbowPower);
+                }
+
+                if (shoulderBrake) {
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    shoulder.setVelocity(400);
+                }
+                else {
+                    shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    shoulder.setPower(shoulderPower);
+                }
+            }
 //            if (autoControl) {
 //                if (shoulderPower != 0) {
 //                    int newShoulderPosition = shoulder.getTargetPosition();
@@ -289,29 +307,36 @@ public class ArmPresetDrive extends LinearOpMode {
 //            }
 
 
+
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Base Velocity", "(%.2f)", motorVelocity);
+            telemetry.addData("Status"       , "Run Time: " + runtime.toString());
+            telemetry.addData("Base Velocity", "(%.2f)"    , motorVelocity     );
 
             telemetry.addData("Motor Power",
                     "back left (%.2f), back right (%.2f), front left (%.2f), front right (%.2f)",
-                    bLeft.getPower(), bRight.getPower(), fLeft.getPower(), fRight.getPower());
+                    bLeft.getPower(), bRight.getPower(), fLeft.getPower(),  fRight.getPower());
 
-            telemetry.addData("Theoretical Velocity", "left (%.2f), right (%.2f)", leftVelocity, rightVelocity);
-            telemetry.addData("Motor Direction", "left (%.2f), right (%.2f)", leftDirection, rightDirection);
-            telemetry.addData("Claw", "Position: (%.2f)", claw.getPosition());
+            telemetry.addData("Theoretical Velocity", "left (%.2f), right (%.2f)", leftVelocity , rightVelocity );
+            telemetry.addData("Motor Direction"     , "left (%.2f), right (%.2f)", leftDirection, rightDirection);
+            telemetry.addData("Claw"                , "Position: (%.2f)"         , claw.getPosition()           );
 
             telemetry.addData("Shoulder",
                     "Power: (%.2f), Position: (%d), Target Position: (%d), Brake: (%b)",
                     shoulderPower, shoulderCurrentPosition, shoulder.getTargetPosition(), shoulderBrake);
             telemetry.addData("Elbow",
                     "Power: (%.2f), Position: (%d), Target Position: (%d), Brake: (%b)",
-                    elbowPower, elbowCurrentPosition, elbow.getTargetPosition(), elbowBrake);
+                    elbowPower   , elbowCurrentPosition   , elbow.getTargetPosition()    , elbowBrake  );
 
-            telemetry.addData("autoControl", "top: (%b), mid: (%b), bot: (%b), pickup: (%b), autoControl: (%b)", topLevel, midLevel, botLevel, pickupLevel, autoControl);
+            telemetry.addData("autoControl"         , "top: (%b), mid: (%b), bot: (%b), pickup: (%b), autoControl: (%b)", topLevel, midLevel, botLevel, pickupLevel, autoControl);
+
+            if (magLimit.getState() == true) {
+                telemetry.addData("MagLimit", "False");
+            }
+            else {
+                telemetry.addData("MagLimit", "True");
+            }
+
             telemetry.update();
         }
     }
 }
-
-
