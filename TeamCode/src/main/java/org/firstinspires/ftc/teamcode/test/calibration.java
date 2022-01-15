@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="arm calibration", group="--")
+@TeleOp(name="arm calibration", group="---")
 //@Disabled
 public class calibration extends LinearOpMode {
 

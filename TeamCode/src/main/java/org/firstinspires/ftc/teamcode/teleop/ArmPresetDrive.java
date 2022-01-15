@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 @TeleOp(name="ArmPreset Test (don't use)", group="--")
-//@Disabled
+@Disabled
 public class ArmPresetDrive extends LinearOpMode {
 
     // Declare OpMode members.

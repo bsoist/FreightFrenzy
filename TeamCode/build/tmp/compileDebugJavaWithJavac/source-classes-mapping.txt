@@ -12,9 +12,23 @@ org/firstinspires/ftc/teamcode/greenBotTest.java
  org.firstinspires.ftc.teamcode.greenBotTest
 org/firstinspires/ftc/teamcode/SensorMagLimit.java
  org.firstinspires.ftc.teamcode.SensorMagLimit
+org/firstinspires/ftc/teamcode/drivetesting/mainRobotTest.java
+ org.firstinspires.ftc.teamcode.drivetesting.mainRobotTest
+org/firstinspires/ftc/teamcode/auto/TensorFlowObjectDetectionWebcam.java
+ org.firstinspires.ftc.teamcode.auto.TensorFlowObjectDetectionWebcam
+org/firstinspires/ftc/teamcode/auto/Archmere.java
+ org.firstinspires.ftc.teamcode.auto.Archmere
+org/firstinspires/ftc/teamcode/comp/presetCalibration.java
+ org.firstinspires.ftc.teamcode.comp.presetCalibration
 org/firstinspires/ftc/teamcode/BuildConfig.java
  org.firstinspires.ftc.teamcode.BuildConfig
 org/firstinspires/ftc/teamcode/VuforiaFieldNavigationWebcam.java
  org.firstinspires.ftc.teamcode.VuforiaFieldNavigationWebcam
-org/firstinspires/ftc/teamcode/BasicOpMode_Linear.java
- org.firstinspires.ftc.teamcode.BasicOpMode_Linear
+org/firstinspires/ftc/teamcode/drivetesting/greenBotTest.java
+ org.firstinspires.ftc.teamcode.drivetesting.Toggle
+ org.firstinspires.ftc.teamcode.drivetesting.Toggle$Status
+ org.firstinspires.ftc.teamcode.drivetesting.greenBotTest
+org/firstinspires/ftc/teamcode/comp/archmereArmPresetDrive.java
+ org.firstinspires.ftc.teamcode.comp.archmereArmPresetDrive
+org/firstinspires/ftc/teamcode/auto/BlueWarehouse.java
+ org.firstinspires.ftc.teamcode.auto.BlueWarehouse

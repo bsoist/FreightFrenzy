@@ -53,7 +53,8 @@ public class EventDrive extends LinearOpMode {
         claw.setPosition(-1.0);
         boolean elbowBrake = false;
         boolean shoulderBrake = false;
-        boolean turnTable = false;
+        boolean blueturnTable = false;
+        boolean redturnTable = false;
         boolean topLevel = false;
         boolean midLevel = false;
         boolean botLevel = false;
@@ -104,15 +105,25 @@ public class EventDrive extends LinearOpMode {
                 }
             }
 
-            //turn table motor controls
-            if (gamepad2.b & !turnTable) {
-                turnTable = true;
+            ///turn table motor controls
+            if (gamepad2.b & !redturnTable) {
+                redturnTable = true;
+                ttMotor.setPower(-1);
+            }
+            else if (gamepad2.b & redturnTable) {
+                ttMotor.setPower((0));
+                redturnTable = false;
+            }
+
+            if (gamepad2.x & !blueturnTable) {
+                blueturnTable = true;
                 ttMotor.setPower(1);
             }
-            else if (gamepad2.b & turnTable) {
+            else if (gamepad2.x & blueturnTable) {
                 ttMotor.setPower((0));
-                turnTable = false;
+                blueturnTable = false;
             }
+
 
             if (gamepad2.dpad_up) { // TOP
                 topLevel = true;
