@@ -139,8 +139,8 @@ public class calibration extends LinearOpMode {
                 }
             }
             else if (trueZero) {
-                shoulder.setTargetPosition(0 - Sdelta);
-                elbow.setTargetPosition(0 - Edelta);
+                shoulder.setTargetPosition(0);
+                elbow.setTargetPosition(0);
             }
 
             elbowPower    = Range.clip(gamepad2.left_stick_y , -1.0, 1.0) * armSpeed;
@@ -158,14 +158,16 @@ public class calibration extends LinearOpMode {
                 elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 shoulder.setPower(shoulderPower);
                 elbow.setPower(elbowPower);
+
+                if (gamepad2.right_bumper){
+                    elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                    shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+                }
             }
 
-            if (gamepad2.right_bumper){
-                elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-                elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            }
+
 
             int elbowCurrentPosition    = elbow   .getCurrentPosition();
             int shoulderCurrentPosition = shoulder.getCurrentPosition();

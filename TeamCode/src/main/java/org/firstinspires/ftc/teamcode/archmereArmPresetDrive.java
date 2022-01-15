@@ -64,22 +64,22 @@ public class archmereArmPresetDrive extends LinearOpMode {
         int Edelta = 394;
         boolean calibrate = false;
 
-        while (!calibrate) {
-            if (!magLimit.getState()){
-                telemetry.addData("MagLimit", "Pressed");
-                telemetry.update();
-                shoulder.setPower(0);
-                calibrate = true;
-            }
-            telemetry.addData("MagLimit", "Not Pressed");
-            telemetry.update();
-            shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            shoulder.setPower(.15);
-        }
-        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        while (!calibrate) {
+//            if (!magLimit.getState()){
+//                telemetry.addData("MagLimit", "Pressed");
+//                telemetry.update();
+//                shoulder.setPower(0);
+//                calibrate = true;
+//            }
+//            telemetry.addData("MagLimit", "Not Pressed");
+//            telemetry.update();
+//            shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//            shoulder.setPower(.15);
+//        }
+//        elbow.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        shoulder.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        elbow.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//        shoulder.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         waitForStart();
         runtime.reset();
@@ -158,11 +158,11 @@ public class archmereArmPresetDrive extends LinearOpMode {
                 shoulder.setTargetPosition(0 - Sdelta);
                 elbow.setTargetPosition(-240 - Edelta);
             }
-            else if (wobbleLevel) {
+            else if (wobbleLevel) { //not done
                 shoulder.setTargetPosition(0 - Sdelta);
                 elbow.setTargetPosition(250 - Edelta);
             }
-            else if (botLevel) {
+            else if (botLevel) { //not done
                 shoulder.setTargetPosition(248 - Sdelta);
                 elbow.setTargetPosition(5 - Edelta);
             }
