@@ -126,8 +126,8 @@ public class BlueWarehouse extends LinearOpMode {
         DcMotorEx bRight    = hardwareMap.get(DcMotorEx.class,"backRight"       );
         DcMotorEx fLeft     = hardwareMap.get(DcMotorEx.class,"frontLeft"       );
         DcMotorEx fRight    = hardwareMap.get(DcMotorEx.class,"frontRight"      );
-        DcMotor elbow     = hardwareMap.get(DcMotorEx.class,"elbowArmMotor"   );
-        DcMotor shoulder  = hardwareMap.get(DcMotorEx.class,"shoulderArmMotor");
+        DcMotorEx elbow     = hardwareMap.get(DcMotorEx.class,"elbowArmMotor"   );
+        DcMotorEx shoulder  = hardwareMap.get(DcMotorEx.class,"shoulderArmMotor");
         claw                = hardwareMap.get(Servo.class,    "claw"            );
         ttMotor             = hardwareMap.get(DcMotorEx.class,"turnTableMotor"  );
 
@@ -159,6 +159,9 @@ public class BlueWarehouse extends LinearOpMode {
 
         String drive = position[2];
 
+        int Sdelta = 1504;
+        int Edelta = 394;
+
         /**
          * Activate TensorFlow Object Detection before we wait for the start command.
          * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.
@@ -178,6 +181,9 @@ public class BlueWarehouse extends LinearOpMode {
 //        /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
+
+        claw.setPosition(1);
+
         waitForStart();
         if (opModeIsActive()) {
             while (opModeIsActive()) {
@@ -197,13 +203,10 @@ public class BlueWarehouse extends LinearOpMode {
                                     recognition.getRight(), recognition.getBottom());
 
                             sleep(1000);
-
                             if (recognition.getLeft() < 280) {
-                                drive = position[1]; // middle > middle of shipping hub
-                                tfod.deactivate();
+                                drive = position[2]; // middle > middle of shipping hub
                             } else if (recognition.getLeft() > 280) {
-                                drive = position[2]; // right > top of shipping hub
-                                tfod.deactivate();
+                                drive = position[1]; // right > top of shipping hub
                             }
                             i++;
                         }
@@ -211,62 +214,103 @@ public class BlueWarehouse extends LinearOpMode {
                     }
                     else { //tenorflow sees nothing > left > bottom of shipping hub
                         drive = position[0];
-                        tfod.deactivate();
                     }
-                    telemetry.addData("Barcode Position", drive);
-                    telemetry.update();
-                }
-                if(drive == position[0]){
-                    bottomLevel = true;
-                    middleLevel = false;
-                    topLevel = false;
-                    telemetry.addData("Target:", "bottom level");
-                    telemetry.update();
-                }
-                else if(drive == position[1]){
-                    bottomLevel = false;
-                    middleLevel = true;
-                    topLevel = false;
-                    telemetry.addData("Target:", "middle level");
-                    telemetry.update();
-                }
-                else if(drive == position[2]){
-                    bottomLevel = false;
-                    middleLevel = false;
-                    topLevel = true;
-                    telemetry.addData("Target:", "top level");
-                    telemetry.update();
-                }
 
-                telemetry.addData("Auto:", "In Progess");
+                }
+                telemetry.addData("Barcode Position", drive);
                 telemetry.update();
 
-                arcRight(33, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
+//                if(drive == position[0]){
+//                    tfod.deactivate();
+//                    bottomLevel = true;
+//                    middleLevel = false;
+//                    topLevel = false;
+//                    telemetry.addData("Target:", "bottom level");
+//                    telemetry.update();
+//                }
+//                else if(drive == position[1]){
+//                    tfod.deactivate();
+//                    bottomLevel = false;
+//                    middleLevel = true;
+//                    topLevel = false;
+//                    telemetry.addData("Target:", "middle level");
+//                    telemetry.update();
+//                }
+//                else if(drive == position[2]){
+//                    tfod.deactivate();
+//                    bottomLevel = false;
+//                    middleLevel = false;
+//                    topLevel = true;
+//                    telemetry.addData("Target:", "top level");
+//                    telemetry.update();
+//                }
+//
+//                telemetry.addData("Auto:", "In Progress");
+//                telemetry.update();
+
+                topLevel = true;
+
+                sleep(500);
+
+                arcRight(30, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
+
+                sleep(5000);
 
                 if (bottomLevel){
                     //set arm to bottom preset
-                    //dont have 1 yet...
+                    elbow.setTargetPosition(75 - Edelta);
+                    shoulder.setTargetPosition(-1937 - Sdelta);
+                    shoulder.setVelocity(1200);
+                    elbow.setVelocity(500);
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    sleep(700);
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
                 }
                 else if (middleLevel){
                     //set arm to middle preset
-                    shoulder.setTargetPosition(-1504);
-                    elbow.setTargetPosition(-240-394);
+                    shoulder.setTargetPosition(0 - Sdelta);
+                    elbow.setTargetPosition(240 - Edelta);
+                    shoulder.setVelocity(1200);
+                    elbow.setVelocity(500);
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    sleep(900);
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 }
                 else if (topLevel){
                     //set arm to top preset
-                    shoulder.setTargetPosition(-1504);
-                    elbow.setTargetPosition(-240-394);
+                    shoulder.setTargetPosition(0 - Sdelta);
+                    elbow.setTargetPosition(150 - Edelta);
+                    shoulder.setVelocity(1200);
+                    elbow.setVelocity(500);
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    sleep(600);
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 }
                 else {
                     //set arm to top preset
-                    shoulder.setTargetPosition(-1504);
-                    elbow.setTargetPosition(-240-394);
+                    shoulder.setTargetPosition(0 - Sdelta);
+                    elbow.setTargetPosition(150 - Edelta);
+                    shoulder.setVelocity(1200);
+                    elbow.setVelocity(500);
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    sleep(600);
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 }
 
-                runStraight(50); // approach hub
+                sleep(4000);
+
+                if (bottomLevel) {
+                    runStraight(40); //approach hub
+                }
+                else {
+                    runStraight(50); // approach hub
+                }
 
                 telemetry.addData("Cargo Release:", "Starting");
                 telemetry.update();
+
+                sleep(1000);
 
                 if (bottomLevel | middleLevel) {
                     claw.setPosition(.75);
@@ -280,10 +324,15 @@ public class BlueWarehouse extends LinearOpMode {
 
                 runStraight(-10); // back slightly from hub
 
+                sleep(1000);
+
                 arcRight(-123, 40.05);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to bRight )
                 //rotate toward warehouse
 
+                sleep(6000);
+
                 runStraight(200); // drive into warehouse
+
 
                 telemetry.addData("Auto:", "Complete :)");
                 telemetry.update();
@@ -423,10 +472,16 @@ public class BlueWarehouse extends LinearOpMode {
     }
 
     public void brake(long durationMS) {
+        DcMotor bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
+        DcMotor bRight    = hardwareMap.get(DcMotorEx.class,"backRight"       );
+        DcMotor fLeft     = hardwareMap.get(DcMotorEx.class,"frontLeft"       );
+        DcMotor fRight    = hardwareMap.get(DcMotorEx.class,"frontRight"      );
+
         bLeft.setPower(0);
         bRight.setPower(0);
         fLeft.setPower(0);
         fRight.setPower(0);
+
         sleep(durationMS);
     }
 

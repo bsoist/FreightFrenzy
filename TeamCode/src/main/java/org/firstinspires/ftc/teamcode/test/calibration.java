@@ -116,23 +116,23 @@ public class calibration extends LinearOpMode {
             }
             if (topLevel) { //good to go for ths meet
                 shoulder.setTargetPosition(0 - Sdelta);
-                elbow.setTargetPosition(-160 - Edelta);
+                elbow.setTargetPosition(150 - Edelta);
             }
             else if (midLevel) { //good to go for ths meet
                 shoulder.setTargetPosition(0 - Sdelta);
-                elbow.setTargetPosition(-240 - Edelta);
+                elbow.setTargetPosition(240 - Edelta);
             }
             else if (wobbleLevel) {
                 shoulder.setTargetPosition(0 - Sdelta);
                 elbow.setTargetPosition(250 - Edelta);
             }
             else if (botLevel) {
-                shoulder.setTargetPosition(248 - Sdelta);
-                elbow.setTargetPosition(5 - Edelta);
+                shoulder.setTargetPosition(-1937 - Sdelta);
+                elbow.setTargetPosition(75 - Edelta);
             }
             else if (pickupLevel) { //good to go for ths meet
-                shoulder.setTargetPosition(-2057 - Sdelta);
-                elbow.setTargetPosition(-135 - Edelta);
+                shoulder.setTargetPosition(-2172 - Sdelta);
+                elbow.setTargetPosition(-269 - Edelta);
                 sleep(500);
                 if (gamepad2.y){
                     claw.setPosition(0);

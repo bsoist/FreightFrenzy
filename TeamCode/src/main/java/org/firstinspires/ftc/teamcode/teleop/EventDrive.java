@@ -129,6 +129,7 @@ public class EventDrive extends LinearOpMode {
                 topLevel = true;
                 midLevel = false;
                 botLevel = false;
+                wobbleLevel = false;
                 pickupLevel = false;
                 autoControl = true;
             }
@@ -136,13 +137,15 @@ public class EventDrive extends LinearOpMode {
                 topLevel = false;
                 midLevel = true;
                 botLevel = false;
+                wobbleLevel = false;
                 pickupLevel = false;
                 autoControl = true;
             }
             else if (gamepad2.dpad_down) { // BOT/WOBBLE
                 topLevel = false;
                 midLevel = false;
-                botLevel = true;
+                //botLevel = true;
+                wobbleLevel = true;
                 pickupLevel = false;
                 autoControl = true;
             }
@@ -150,6 +153,7 @@ public class EventDrive extends LinearOpMode {
                 topLevel = false;
                 midLevel = false;
                 botLevel = false;
+                wobbleLevel = false;
                 pickupLevel = true;
                 autoControl = true;
             }
@@ -157,32 +161,33 @@ public class EventDrive extends LinearOpMode {
                 topLevel = false;
                 midLevel = false;
                 botLevel = false;
+                wobbleLevel = false;
                 pickupLevel = false;
                 autoControl = false;
             }
 
             if (topLevel) { //good to go for ths meet
                 shoulder.setTargetPosition(0 - Sdelta);
-                elbow.setTargetPosition(-160 - Edelta);
+                elbow.setTargetPosition(150 - Edelta);
             }
             else if (midLevel) { //good to go for ths meet
                 shoulder.setTargetPosition(0 - Sdelta);
-                elbow.setTargetPosition(-240 - Edelta);
+                elbow.setTargetPosition(240 - Edelta);
             }
-            else if (wobbleLevel) { //not done
+            else if (wobbleLevel) { //good to go
                 shoulder.setTargetPosition(0 - Sdelta);
                 elbow.setTargetPosition(250 - Edelta);
             }
-            else if (botLevel) { //not done
-                shoulder.setTargetPosition(248 - Sdelta);
-                elbow.setTargetPosition(5 - Edelta);
+            else if (botLevel) { // good to go
+                shoulder.setTargetPosition(-1937 - Sdelta);
+                elbow.setTargetPosition(75 - Edelta);
             }
             else if (pickupLevel) { //good to go for ths meet
-                shoulder.setTargetPosition(-2057 - Sdelta);
-                elbow.setTargetPosition(-135 - Edelta);
+                shoulder.setTargetPosition(-2172 - Sdelta);
+                elbow.setTargetPosition(-269 - Edelta);
                 sleep(500);
                 if (gamepad2.y){
-                    claw.setPosition(.3);
+                    claw.setPosition(.5);
                 }
             }
             if (autoControl) {

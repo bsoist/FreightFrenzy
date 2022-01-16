@@ -1,34 +1,18 @@
-org/firstinspires/ftc/teamcode/TensorFlowObjectDetectionWebcam.java
- org.firstinspires.ftc.teamcode.TensorFlowObjectDetectionWebcam
-org/firstinspires/ftc/teamcode/ArmPresetDrive.java
- org.firstinspires.ftc.teamcode.ArmPresetDrive
-org/firstinspires/ftc/teamcode/archmereArmPresetDrive.java
- org.firstinspires.ftc.teamcode.archmereArmPresetDrive
-org/firstinspires/ftc/teamcode/calibration.java
- org.firstinspires.ftc.teamcode.calibration
-org/firstinspires/ftc/teamcode/greenBotTest.java
- org.firstinspires.ftc.teamcode.Toggle
- org.firstinspires.ftc.teamcode.Toggle$Status
- org.firstinspires.ftc.teamcode.greenBotTest
-org/firstinspires/ftc/teamcode/SensorMagLimit.java
- org.firstinspires.ftc.teamcode.SensorMagLimit
-org/firstinspires/ftc/teamcode/drivetesting/mainRobotTest.java
- org.firstinspires.ftc.teamcode.drivetesting.mainRobotTest
-org/firstinspires/ftc/teamcode/auto/TensorFlowObjectDetectionWebcam.java
- org.firstinspires.ftc.teamcode.auto.TensorFlowObjectDetectionWebcam
-org/firstinspires/ftc/teamcode/auto/Archmere.java
- org.firstinspires.ftc.teamcode.auto.Archmere
-org/firstinspires/ftc/teamcode/comp/presetCalibration.java
- org.firstinspires.ftc.teamcode.comp.presetCalibration
+org/firstinspires/ftc/teamcode/test/calibration.java
+ org.firstinspires.ftc.teamcode.test.calibration
+org/firstinspires/ftc/teamcode/auto/RedWarehouse.java
+ org.firstinspires.ftc.teamcode.auto.RedWarehouse
+org/firstinspires/ftc/teamcode/teleop/EventDrive.java
+ org.firstinspires.ftc.teamcode.teleop.EventDrive
+org/firstinspires/ftc/teamcode/test/TensorFlowObjectDetectionWebcam.java
+ org.firstinspires.ftc.teamcode.test.TensorFlowObjectDetectionWebcam
+org/firstinspires/ftc/teamcode/test/SensorMagLimit.java
+ org.firstinspires.ftc.teamcode.test.SensorMagLimit
+org/firstinspires/ftc/teamcode/auto/BlueCarousel.java
+ org.firstinspires.ftc.teamcode.auto.BlueCarousel
 org/firstinspires/ftc/teamcode/BuildConfig.java
  org.firstinspires.ftc.teamcode.BuildConfig
-org/firstinspires/ftc/teamcode/VuforiaFieldNavigationWebcam.java
- org.firstinspires.ftc.teamcode.VuforiaFieldNavigationWebcam
-org/firstinspires/ftc/teamcode/drivetesting/greenBotTest.java
- org.firstinspires.ftc.teamcode.drivetesting.Toggle
- org.firstinspires.ftc.teamcode.drivetesting.Toggle$Status
- org.firstinspires.ftc.teamcode.drivetesting.greenBotTest
-org/firstinspires/ftc/teamcode/comp/archmereArmPresetDrive.java
- org.firstinspires.ftc.teamcode.comp.archmereArmPresetDrive
+org/firstinspires/ftc/teamcode/teleop/ArmPresetDrive.java
+ org.firstinspires.ftc.teamcode.teleop.ArmPresetDrive
 org/firstinspires/ftc/teamcode/auto/BlueWarehouse.java
  org.firstinspires.ftc.teamcode.auto.BlueWarehouse
