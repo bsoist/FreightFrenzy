@@ -209,18 +209,16 @@ public class RedWarehouse extends LinearOpMode {
                                 drive = barcode[2][0]; // right > top of shipping hub
                                 level = barcode [2][1];
                                 topLevel = true;
-                            } else {
-                                drive = barcode[0][0]; // left > bottom of shipping hub
-                                level = barcode [0][1];
-                                bottomLevel = true;
                             }
                             i++;
-                            sleep(700);
+                            sleep(1500);
                         }
 
                     }
-                    else { //tenorflow sees nothing > left > bottom of shipping hub
-                        drive = barcode[0][0];
+                    else { //tensorflow sees nothing > left > bottom of shipping hub
+                        drive = barcode[0][0]; // left > bottom of shipping hub
+                        level = barcode [0][1];
+                        bottomLevel = true;
                     }
                 }
                 telemetry.addData("Barcode Position", drive);
