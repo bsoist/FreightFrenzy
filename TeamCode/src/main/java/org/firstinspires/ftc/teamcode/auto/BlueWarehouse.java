@@ -258,10 +258,12 @@ public class BlueWarehouse extends LinearOpMode {
 
                 if (bottomLevel){
                     //set arm to bottom preset
-                    elbow.setTargetPosition(75 - Edelta);
+                    elbow.setTargetPosition(-75 + Edelta);
                     shoulder.setTargetPosition(-1937 - Sdelta);
-                    shoulder.setVelocity(1200);
+
                     elbow.setVelocity(500);
+                    shoulder.setVelocity(1200);
+
                     elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     sleep(700);
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -269,30 +271,36 @@ public class BlueWarehouse extends LinearOpMode {
                 }
                 else if (middleLevel){
                     //set arm to middle preset
+                    elbow.setTargetPosition(-240 + Edelta);
                     shoulder.setTargetPosition(0 - Sdelta);
-                    elbow.setTargetPosition(240 - Edelta);
-                    shoulder.setVelocity(1200);
+
                     elbow.setVelocity(500);
+                    shoulder.setVelocity(1200);
+
                     elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     sleep(900);
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 }
                 else if (topLevel){
                     //set arm to top preset
+                    elbow.setTargetPosition(-150 + Edelta);
                     shoulder.setTargetPosition(0 - Sdelta);
-                    elbow.setTargetPosition(150 - Edelta);
-                    shoulder.setVelocity(1200);
+
                     elbow.setVelocity(500);
+                    shoulder.setVelocity(1200);
+
                     elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     sleep(600);
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 }
                 else {
                     //set arm to top preset
+                    elbow.setTargetPosition(-150 + Edelta);
                     shoulder.setTargetPosition(0 - Sdelta);
-                    elbow.setTargetPosition(150 - Edelta);
-                    shoulder.setVelocity(1200);
+
                     elbow.setVelocity(500);
+                    shoulder.setVelocity(1200);
+
                     elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     sleep(600);
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
