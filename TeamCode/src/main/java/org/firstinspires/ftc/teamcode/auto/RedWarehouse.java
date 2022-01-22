@@ -228,6 +228,16 @@ public class RedWarehouse extends LinearOpMode {
 
                 telemetry.addData("Barcode Position", drive);
                 telemetry.addData("Target:", level);
+                if (bottomLevel){
+                    telemetry.addData("BOTTOM");
+                }
+                if (middleLevel){
+                    telemetry.addData("MIDDLE");
+                }
+                if (topLevel){
+                    telemetry.addData("TOP");
+                }
+
                 telemetry.addData("Arm Code","Top: %b, Middle: %b, Bottom: %b", topLevel, middleLevel, bottomLevel);
                 telemetry.addData("Auto:", "In Progress");
                 telemetry.update();
