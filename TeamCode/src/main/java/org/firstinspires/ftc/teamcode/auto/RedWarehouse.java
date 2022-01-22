@@ -203,10 +203,16 @@ public class RedWarehouse extends LinearOpMode {
 
                             if (recognition.getLeft() < 280) {
                                 drive = barcode[1][0]; // middle > middle of shipping hub
+                                level = barcode [1][1];
+                                middleLevel = true;
                             } else if (recognition.getLeft() > 280) {
                                 drive = barcode[2][0]; // right > top of shipping hub
+                                level = barcode [2][1];
+                                topLevel = true;
                             } else {
                                 drive = barcode[0][0]; // left > bottom of shipping hub
+                                level = barcode [0][1];
+                                bottomLevel = true;
                             }
                             i++;
                             sleep(700);
@@ -218,44 +224,13 @@ public class RedWarehouse extends LinearOpMode {
                     }
                 }
                 telemetry.addData("Barcode Position", drive);
-                telemetry.update();
-
-                if(drive == barcode[0][0]){
-                    level = barcode [0][1];
-                    bottomLevel = true;
-                    middleLevel = false;
-                    topLevel = false;
-                    telemetry.addData("Barcode Position", drive);
-                    telemetry.addData("Target:", level);
-                    telemetry.update();
-                }
-                else if(drive == barcode[1][0]){
-                    level = barcode [1][1];
-                    bottomLevel = false;
-                    middleLevel = true;
-                    topLevel = false;
-                    telemetry.addData("Barcode Position", drive);
-                    telemetry.addData("Target:", level);
-                    telemetry.update();
-                }
-                else if(drive == barcode[2][0]){
-                    level = barcode [2][1];
-                    bottomLevel = false;
-                    middleLevel = false;
-                    topLevel = true;
-                    telemetry.addData("Barcode Position", drive);
-                    telemetry.addData("Target:", level);
-                    telemetry.update();
-                }
-//////                telemetryUpdate(drive);
-                telemetry.addData("Barcode Position", drive);
                 telemetry.addData("Target:", level);
                 telemetry.addData("Auto:", "In Progress");
                 telemetry.update();
 
                 arcLeft(30, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
 
-                sleep(1500);
+                sleep(2000);
 
                 if (bottomLevel){
                     //set arm to bottom preset
@@ -309,10 +284,10 @@ public class RedWarehouse extends LinearOpMode {
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 }
 
-                sleep(4000);
-                telemetry.addData("Auto:", "In Progress");
+                sleep(3000);
                 telemetry.addData("Barcode Position", drive);
                 telemetry.addData("Target:", level);
+                telemetry.addData("Auto:", "In Progress");
                 telemetry.addData("Shoulder Target", shoulder.getTargetPosition());
                 telemetry.addData("Shoulder Position", shoulder.getCurrentPosition());
                 telemetry.addData("Elbow Target", elbow.getTargetPosition());
