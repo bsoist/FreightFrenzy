@@ -29,7 +29,6 @@
 package org.firstinspires.ftc.teamcode.auto;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -155,9 +154,9 @@ public class BlueWarehouse extends LinearOpMode {
         boolean middleLevel = false;
         boolean topLevel = false;
 
-        String position[] = {"left", "middle", "right"};
-
-        String drive = position[2];
+        String[][] barcode = new String[][] {{"left", "bottom level"}, {"middle", "mid level"}, {"right", "top level"}};
+        String drive = barcode[2][0];
+        String level = barcode [2][1];
 
         int Sdelta = 1504;
         int Edelta = 394;
@@ -175,14 +174,14 @@ public class BlueWarehouse extends LinearOpMode {
             // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
             // should be set to the value of the images used to create the TensorFlow Object Detection model
             // (typically 16/9).
-            tfod.setZoom(1.5, 16.0/9.0);
+            tfod.setZoom(1, 16.0/9.0);
         }
 
 //        /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
 
-        claw.setPosition(1);
+        claw.setPosition(1); //close
 
         waitForStart();
         if (opModeIsActive()) {
@@ -194,6 +193,12 @@ public class BlueWarehouse extends LinearOpMode {
                     if (updatedRecognitions != null) {
                         telemetry.addData("# Object Detected", updatedRecognitions.size());
                         // step through the list of recognitions and display boundary info.
+
+                        drive = barcode[0][0]; // left > bottom of shipping hub
+                        level = barcode [0][1];
+                        bottomLevel = true;
+
+                        // if updatedRegonitions = 0, the for loop wont run
                         int i = 0;
                         for (Recognition recognition : updatedRecognitions) {
                             telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
@@ -202,96 +207,88 @@ public class BlueWarehouse extends LinearOpMode {
                             telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
                                     recognition.getRight(), recognition.getBottom());
 
-                            sleep(1000);
+                            bottomLevel = false;
+
                             if (recognition.getLeft() < 280) {
-                                drive = position[2]; // middle > middle of shipping hub
+                                drive = barcode[1][0]; // middle > middle of shipping hub
+                                level = barcode [1][1];
+                                middleLevel = true;
                             } else if (recognition.getLeft() > 280) {
-                                drive = position[1]; // right > top of shipping hub
+                                drive = barcode[2][0]; // right > top of shipping hub
+                                level = barcode [2][1];
+                                topLevel = true;
                             }
                             i++;
+                            sleep(1500);
                         }
 
                     }
-                    else { //tenorflow sees nothing > left > bottom of shipping hub
-                        drive = position[0];
+                    else { //tensorflow sees nothing > left > bottom of shipping hub
+                        drive = barcode[0][0]; // left > bottom of shipping hub
+                        level = barcode [0][1];
+                        bottomLevel = true;
                     }
-
                 }
+                else {
+                    drive = "banana";
+                    level = "banana";
+                }
+
                 telemetry.addData("Barcode Position", drive);
+                telemetry.addData("Target:", level);
+                if (bottomLevel) {
+                    telemetry.addData("Position","BOTTOM");
+                }if (middleLevel) {
+                    telemetry.addData("Position","MIDDLE");
+                }if (topLevel) {
+                    telemetry.addData("Position","TOP");
+                }
+                telemetry.addData("Arm Code","Top: %b, Middle: %b, Bottom: %b", topLevel, middleLevel, bottomLevel);
+                telemetry.addData("Auto:", "In Progress");
                 telemetry.update();
 
-//                if(drive == position[0]){
-//                    tfod.deactivate();
-//                    bottomLevel = true;
-//                    middleLevel = false;
-//                    topLevel = false;
-//                    telemetry.addData("Target:", "bottom level");
-//                    telemetry.update();
-//                }
-//                else if(drive == position[1]){
-//                    tfod.deactivate();
-//                    bottomLevel = false;
-//                    middleLevel = true;
-//                    topLevel = false;
-//                    telemetry.addData("Target:", "middle level");
-//                    telemetry.update();
-//                }
-//                else if(drive == position[2]){
-//                    tfod.deactivate();
-//                    bottomLevel = false;
-//                    middleLevel = false;
-//                    topLevel = true;
-//                    telemetry.addData("Target:", "top level");
-//                    telemetry.update();
-//                }
-//
-//                telemetry.addData("Auto:", "In Progress");
-//                telemetry.update();
+                arcRight(39, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
 
-                topLevel = true;
-
-                sleep(500);
-
-                arcRight(30, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
-
-                sleep(5000);
+                sleep(2000);
 
                 if (bottomLevel){
                     //set arm to bottom preset
                     elbow.setTargetPosition(-75 + Edelta);
                     shoulder.setTargetPosition(-1937 - Sdelta);
 
-                    elbow.setVelocity(500);
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     shoulder.setVelocity(1200);
 
-                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    sleep(700);
-                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    sleep(400);
 
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elbow.setVelocity(500);
                 }
                 else if (middleLevel){
                     //set arm to middle preset
                     elbow.setTargetPosition(-240 + Edelta);
                     shoulder.setTargetPosition(0 - Sdelta);
 
-                    elbow.setVelocity(500);
-                    shoulder.setVelocity(1200);
-
                     elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elbow.setVelocity(500);
+
                     sleep(900);
+
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    shoulder.setVelocity(1200);
                 }
                 else if (topLevel){
                     //set arm to top preset
-                    elbow.setTargetPosition(-150 + Edelta);
+                    elbow.setTargetPosition(-160 + Edelta);
                     shoulder.setTargetPosition(0 - Sdelta);
 
-                    elbow.setVelocity(500);
-                    shoulder.setVelocity(1200);
-
                     elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    sleep(600);
+                    elbow.setVelocity(500);
+
+                    sleep(500);
+
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    shoulder.setVelocity(1200);
                 }
                 else {
                     //set arm to top preset
@@ -306,49 +303,125 @@ public class BlueWarehouse extends LinearOpMode {
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 }
 
-                sleep(4000);
+                if (bottomLevel) {
+                    sleep(6000);
+                }
+                else{
+                    sleep(3000);
+                }
+
+                telemetry.addData("Barcode Position", drive);
+                telemetry.addData("Target:", level);
+                telemetry.addData("Auto:", "In Progress");
+                telemetry.addData("Shoulder Target", shoulder.getTargetPosition());
+                telemetry.addData("Shoulder Position", shoulder.getCurrentPosition());
+                telemetry.addData("Elbow Target", elbow.getTargetPosition());
+                telemetry.addData("Elbow Position", elbow.getCurrentPosition());
+                telemetry.update();
 
                 if (bottomLevel) {
-                    runStraight(40); //approach hub
+                    runStraight(14); //approach hub
+                }
+                else if(middleLevel){
+                    runStraight(38); //approach hub
                 }
                 else {
-                    runStraight(50); // approach hub
+                    runStraight(40); // approach hub
                 }
 
                 telemetry.addData("Cargo Release:", "Starting");
+                telemetry.addData("Barcode Position", drive);
+                telemetry.addData("Target:", level);
+                telemetry.addData("Auto:", "In Progress");
+                telemetry.addData("Shoulder Target", shoulder.getTargetPosition());
+                telemetry.addData("Shoulder Position", shoulder.getCurrentPosition());
+                telemetry.addData("Elbow Target", elbow.getTargetPosition());
+                telemetry.addData("Elbow Position", elbow.getCurrentPosition());
                 telemetry.update();
-
-                sleep(1000);
+                sleep(600);
 
                 if (bottomLevel | middleLevel) {
-                    claw.setPosition(.75);
+                    claw.setPosition(.6);
                 }
                 else {
                     claw.setPosition(.4);
                 }
+                sleep(900);
+
+                claw.setPosition(1); //close
 
                 telemetry.addData("Cargo Release:", "Done");
+                telemetry.addData("Barcode Position", drive);
+                telemetry.addData("Target:", level);
+                telemetry.addData("Auto:", "In Progress");
+                telemetry.addData("Shoulder Target", shoulder.getTargetPosition());
+                telemetry.addData("Shoulder Position", shoulder.getCurrentPosition());
+                telemetry.addData("Elbow Target", elbow.getTargetPosition());
+                telemetry.addData("Elbow Position", elbow.getCurrentPosition());
                 telemetry.update();
 
-                runStraight(-10); // back slightly from hub
+                shoulder.setVelocity(0);
+                shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                sleep(1000);
+                // back slightly from hub
+                if (bottomLevel){
+                    runStraight(-10);
+                }else if (middleLevel) {
+                    runStraight(-11); // net (delta)x = 38
+                }else {
+                    runStraight(-13); // net (delta)x = 27
+                }
 
-                arcRight(-123, 40.05);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to bRight )
-                //rotate toward warehouse
 
-                sleep(6000);
+                if (!bottomLevel) {
+                    elbow.setVelocity(100);
+                }
 
-                runStraight(200); // drive into warehouse
+                sleep(500);
 
+                if (bottomLevel) {
+                    shoulder.setTargetPosition(0);
+                    elbow.setTargetPosition(0);
+
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    shoulder.setVelocity(1500);
+
+                    sleep(700);
+
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elbow.setVelocity(500);
+
+                    sleep(3000);
+
+                    runStraight(25);// net (delta)x from arc = 27
+
+                    sleep(700);
+                }
+                else {
+                    elbow.setTargetPosition(0);
+                    sleep(800);
+                }
+
+                arcRight(-30, 84.405);
+
+                rotateLeft(90); //rotate toward warehouse
+
+                sleep(2000);
+
+                runStraight(120); // drive into warehouse
 
                 telemetry.addData("Auto:", "Complete :)");
                 telemetry.update();
                 brake(30000); //stall for the rest of auto
+
             }
         }
 }
-
+//    public void telemetryUpdate(string barcodePosition) {
+//        telemetry.addData("Barcode Position", barcodePosition);
+//        telemetry.addData("Auto:", "In Progress");
+//        telemetry.update();
+//    }
 
     public void runMotorsPower(double leftPower, double rightPower, double speed, long durationMS) {
         bLeft.setPower(leftPower * speed);
@@ -413,7 +486,7 @@ public class BlueWarehouse extends LinearOpMode {
         boolean done = false;
 
         while (!done) {
-            if (target < bLeft.getCurrentPosition()) {
+            if ((DistanceCM > 0) & (bLeft.getCurrentPosition() > target) | ((DistanceCM < 0) & (bLeft.getCurrentPosition() < target))) {
                 bLeft.setVelocity(0);
                 bRight.setVelocity(0);
                 fLeft.setVelocity(0);
@@ -425,11 +498,11 @@ public class BlueWarehouse extends LinearOpMode {
                 fRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
                 telemetry.addData("Straight line:", "Done");
-                telemetry.update();
+//                telemetry.update();
                 done = true;
             }
             telemetry.addData("Straight line:", "In Progress");
-            telemetry.update();
+//            telemetry.update();
         }
     }
 
@@ -456,7 +529,7 @@ public class BlueWarehouse extends LinearOpMode {
         boolean done = false;
 
         while (!done) {
-            if (target < bLeft.getCurrentPosition()) {
+            if ((Theta > 0) & (bLeft.getCurrentPosition() > target) | (Theta < 0) & (bLeft.getCurrentPosition() < target))  {
                 bLeft.setVelocity(0);
                 fLeft.setVelocity(0);
 
@@ -466,12 +539,158 @@ public class BlueWarehouse extends LinearOpMode {
                 fRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
                 telemetry.addData("Arc:", "Done");
-                telemetry.update();
+//                telemetry.update();
 
                 done = true;
             }
             telemetry.addData("Arc:", "In Progress");
-            telemetry.update();
+//            telemetry.update();
+        }
+    }
+
+    public void arcLeft(double Theta, double radiusCM) { //only runs left motors (arc degree of bLeft only (for now), radius of circle arc 0f bLeft only (for now))
+        DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
+        DcMotorEx bRight    = hardwareMap.get(DcMotorEx.class,"backRight"       );
+        DcMotorEx fLeft     = hardwareMap.get(DcMotorEx.class,"frontLeft"       );
+        DcMotorEx fRight    = hardwareMap.get(DcMotorEx.class,"frontRight"      );
+
+        double radiusInches = radiusCM * .394;
+        double arcLengthInches = Theta * (Math.PI/180) * radiusInches;
+        double arcLengthCM = arcLengthInches * 2.54;
+        int target = CMtoTicks(arcLengthCM);
+
+        bRight.setTargetPosition(target);
+        fRight.setTargetPosition(target);
+
+        bRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        fRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+
+        bRight.setVelocity(1000);
+        fRight.setVelocity(1000);
+
+        boolean done = false;
+
+        while (!done) {
+            if ((Theta > 0) & (bRight.getCurrentPosition() > target) | (Theta < 0) & (bRight.getCurrentPosition() < target)) {
+                bRight.setVelocity(0);
+                fRight.setVelocity(0);
+
+                bLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                bRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                fLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                fRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                telemetry.addData("Arc:", "Done");
+//                telemetry.update();
+
+                done = true;
+            }
+            telemetry.addData("Arc:", "In Progress");
+//            telemetry.update();
+        }
+    }
+
+    public void rotateLeft(double Theta) {
+        DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
+        DcMotorEx bRight    = hardwareMap.get(DcMotorEx.class,"backRight"       );
+        DcMotorEx fLeft     = hardwareMap.get(DcMotorEx.class,"frontLeft"       );
+        DcMotorEx fRight    = hardwareMap.get(DcMotorEx.class,"frontRight"      );
+
+        double robotRadiusCM = 24.3;
+        double radiusInches = robotRadiusCM * .394;
+        double arcLengthInches = (Theta + (.1*Theta)) * (Math.PI/180) * radiusInches;
+        double arcLengthCM = arcLengthInches * 2.54;
+        int rightTarget = CMtoTicks(arcLengthCM);
+        int leftTarget = -rightTarget;
+
+        bRight.setTargetPosition(rightTarget);
+        fRight.setTargetPosition(rightTarget);
+        bLeft.setTargetPosition(leftTarget);
+        fLeft.setTargetPosition(leftTarget);
+
+        bRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        fRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        bLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        fLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+
+        bRight.setVelocity(1000);
+        fRight.setVelocity(1000);
+        bLeft.setVelocity(1000);
+        fLeft.setVelocity(1000);
+
+        boolean done = false;
+
+        while (!done) {
+            if ((Theta > 0) & (bRight.getCurrentPosition() > rightTarget & bLeft.getCurrentPosition() < leftTarget ) | (Theta < 0) & (bRight.getCurrentPosition() < rightTarget & bLeft.getCurrentPosition() > leftTarget )) {
+                bRight.setVelocity(0);
+                fRight.setVelocity(0);
+                bLeft.setVelocity(0);
+                fLeft.setVelocity(0);
+
+                bLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                bRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                fLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                fRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                telemetry.addData("Arc:", "Done");
+//                telemetry.update();
+
+                done = true;
+            }
+            telemetry.addData("Arc:", "In Progress");
+//            telemetry.update();
+        }
+    }
+
+    public void rotateRight(double Theta) {
+        DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
+        DcMotorEx bRight    = hardwareMap.get(DcMotorEx.class,"backRight"       );
+        DcMotorEx fLeft     = hardwareMap.get(DcMotorEx.class,"frontLeft"       );
+        DcMotorEx fRight    = hardwareMap.get(DcMotorEx.class,"frontRight"      );
+
+        double robotRadiusCM = 24.3;
+        double radiusInches = robotRadiusCM * .394;
+        double arcLengthInches = (Theta + (.1*Theta)) * (Math.PI/180) * radiusInches;
+        double arcLengthCM = arcLengthInches * 2.54;
+        int leftTarget = CMtoTicks(arcLengthCM);
+        int rightTarget = -leftTarget;
+
+        bRight.setTargetPosition(rightTarget);
+        fRight.setTargetPosition(rightTarget);
+        bLeft.setTargetPosition(leftTarget);
+        fLeft.setTargetPosition(leftTarget);
+
+        bRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        fRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        bLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        fLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+
+        bRight.setVelocity(1000);
+        fRight.setVelocity(1000);
+        bLeft.setVelocity(1000);
+        fLeft.setVelocity(1000);
+
+        boolean done = false;
+
+        while (!done) {
+            if ((Theta > 0) & (bRight.getCurrentPosition() < rightTarget & bLeft.getCurrentPosition() > leftTarget ) | (Theta < 0) & (bRight.getCurrentPosition() > rightTarget & bLeft.getCurrentPosition() < leftTarget )) {
+                bRight.setVelocity(0);
+                fRight.setVelocity(0);
+                bLeft.setVelocity(0);
+                fLeft.setVelocity(0);
+
+                bLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                bRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                fLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                fRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                telemetry.addData("Arc:", "Done");
+//                telemetry.update();
+
+                done = true;
+            }
+            telemetry.addData("Arc:", "In Progress");
+//            telemetry.update();
         }
     }
 
@@ -489,7 +708,6 @@ public class BlueWarehouse extends LinearOpMode {
         bRight.setPower(0);
         fLeft.setPower(0);
         fRight.setPower(0);
-
         sleep(durationMS);
     }
 

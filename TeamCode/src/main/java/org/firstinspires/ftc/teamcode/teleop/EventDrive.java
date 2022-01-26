@@ -167,20 +167,45 @@ public class EventDrive extends LinearOpMode {
             }
 
             if (topLevel) { //good to go for ths meet
+                //set arm to top preset
+                elbow.setTargetPosition(-160 + Edelta);
                 shoulder.setTargetPosition(0 - Sdelta);
-                elbow.setTargetPosition(150 - Edelta);
+
+                elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elbow.setVelocity(500);
+
+                sleep(500);
+
+                shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                shoulder.setVelocity(1200);
             }
             else if (midLevel) { //good to go for ths meet
+                elbow.setTargetPosition(-240 + Edelta);
                 shoulder.setTargetPosition(0 - Sdelta);
-                elbow.setTargetPosition(240 - Edelta);
+
+                elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elbow.setVelocity(500);
+
+                sleep(900);
+
+                shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                shoulder.setVelocity(1200);
             }
             else if (wobbleLevel) { //good to go
                 shoulder.setTargetPosition(0 - Sdelta);
                 elbow.setTargetPosition(250 - Edelta);
             }
             else if (botLevel) { // good to go
+                elbow.setTargetPosition(-75 + Edelta);
                 shoulder.setTargetPosition(-1937 - Sdelta);
-                elbow.setTargetPosition(75 - Edelta);
+
+                shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                shoulder.setVelocity(1200);
+
+                sleep(400);
+
+                elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elbow.setVelocity(500);
             }
             else if (pickupLevel) { //good to go for ths meet
                 shoulder.setTargetPosition(-2172 - Sdelta);
@@ -198,10 +223,23 @@ public class EventDrive extends LinearOpMode {
 
             }
             else {
-                shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                shoulder.setPower(shoulderPower);
-                elbow.setPower(elbowPower);
+                if (elbowBrake) { // brakes only work if using arm manually
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elbow.setVelocity(1000);
+                }
+                else {
+                    elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    elbow.setPower(elbowPower);
+                }
+
+                if (shoulderBrake) {
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    shoulder.setVelocity(400);
+                }
+                else {
+                    shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    shoulder.setPower(shoulderPower);
+                }
             }
 
             int elbowCurrentPosition    = elbow   .getCurrentPosition();
@@ -275,27 +313,6 @@ public class EventDrive extends LinearOpMode {
             }
             else if (gamepad2.right_stick_button & shoulderBrake) {
                 shoulderBrake = false;
-            }
-
-
-            if (!autoControl) {
-                if (elbowBrake) { // brakes only work if using arm manually
-                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    elbow.setVelocity(1000);
-                }
-                else {
-                    elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    elbow.setPower(elbowPower);
-                }
-
-                if (shoulderBrake) {
-                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    shoulder.setVelocity(400);
-                }
-                else {
-                    shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    shoulder.setPower(shoulderPower);
-                }
             }
 //            if (autoControl) {
 //                if (shoulderPower != 0) {
