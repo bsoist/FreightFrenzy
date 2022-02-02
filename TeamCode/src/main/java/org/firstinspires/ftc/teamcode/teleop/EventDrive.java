@@ -144,8 +144,8 @@ public class EventDrive extends LinearOpMode {
             else if (gamepad2.dpad_down) { // BOT/WOBBLE
                 topLevel = false;
                 midLevel = false;
-                //botLevel = true;
-                wobbleLevel = true;
+                botLevel = true;
+//                wobbleLevel = true;
                 pickupLevel = false;
                 autoControl = true;
             }
@@ -170,51 +170,28 @@ public class EventDrive extends LinearOpMode {
                 //set arm to top preset
                 elbow.setTargetPosition(-160 + Edelta);
                 shoulder.setTargetPosition(0 - Sdelta);
-
-                elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elbow.setVelocity(500);
-
-                sleep(500);
-
-                shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                shoulder.setVelocity(1200);
             }
             else if (midLevel) { //good to go for ths meet
                 elbow.setTargetPosition(-240 + Edelta);
                 shoulder.setTargetPosition(0 - Sdelta);
-
-                elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elbow.setVelocity(500);
-
-                sleep(900);
-
-                shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                shoulder.setVelocity(1200);
             }
-            else if (wobbleLevel) { //good to go
-                shoulder.setTargetPosition(0 - Sdelta);
-                elbow.setTargetPosition(250 - Edelta);
-            }
+//            else if (wobbleLevel) { //good to go
+//                shoulder.setTargetPosition(0 - Sdelta);
+//                elbow.setTargetPosition(250 - Edelta);
+//            }
             else if (botLevel) { // good to go
                 elbow.setTargetPosition(-75 + Edelta);
                 shoulder.setTargetPosition(-1937 - Sdelta);
-
-                shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                shoulder.setVelocity(1200);
-
-                sleep(400);
-
-                elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elbow.setVelocity(500);
             }
             else if (pickupLevel) { //good to go for ths meet
                 shoulder.setTargetPosition(-2172 - Sdelta);
-                elbow.setTargetPosition(-269 - Edelta);
+                elbow.setTargetPosition(269 - Edelta);
                 sleep(500);
                 if (gamepad2.y){
                     claw.setPosition(.5);
                 }
             }
+
             if (autoControl) {
                 shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
