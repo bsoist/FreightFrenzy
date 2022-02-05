@@ -51,8 +51,8 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@Autonomous(name = "Red Warehouse", group = "-")
-// @Disabled
+@Autonomous(name = "Red Warehouse", group = "--", preselectTeleOp = "HalfPresetDrive")
+//@Disabled
 public class RedWarehouse extends LinearOpMode {
   /* Note: This sample uses the all-objects Tensor Flow model (FreightFrenzy_BCDM.tflite), which contains
    * the following 4 detectable objects
@@ -341,14 +341,14 @@ public class RedWarehouse extends LinearOpMode {
                 sleep(600);
 
                 if (bottomLevel | middleLevel) {
-                    claw.setPosition(.6);
+                    claw.setPosition(.65); //open small amount to not hit other levels
+                    sleep(900);
+                    claw.setPosition(1); //close
                 }
                 else {
                     claw.setPosition(.4);
+                    sleep(600);
                 }
-                sleep(900);
-
-                claw.setPosition(1); //close
 
                 telemetry.addData("Cargo Release:", "Done");
                 telemetry.addData("Barcode Position", drive);
@@ -372,6 +372,9 @@ public class RedWarehouse extends LinearOpMode {
                     runStraight(-13); // net (delta)x = 27
                 }
 
+                if (topLevel){
+                    claw.setPosition(1); //close
+                }
 
                 if (!bottomLevel) {
                     elbow.setVelocity(100);
@@ -408,7 +411,7 @@ public class RedWarehouse extends LinearOpMode {
 
                 sleep(2000);
 
-                runStraight(120); // drive into warehouse
+                runStraight(140); // drive into warehouse
 
                 telemetry.addData("Auto:", "Complete :)");
                 telemetry.update();

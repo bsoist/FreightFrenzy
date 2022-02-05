@@ -44,7 +44,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
  */
 @TeleOp(name = "MagLimitTest", group = "---")
-//@Disabled
+@Disabled
 public class SensorMagLimit extends LinearOpMode {
     /**
      * The REV Robotics Touch Sensor

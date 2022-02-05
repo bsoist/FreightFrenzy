@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-@TeleOp(name="HalfPresetDrive", group="--")
+@TeleOp(name="EventDrive", group="--")
 //@Disabled
 public class HalfPresetDrive extends LinearOpMode {
 
@@ -46,6 +46,7 @@ public class HalfPresetDrive extends LinearOpMode {
         bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        ttMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         bRight.setDirection(DcMotor.Direction.REVERSE);
         fRight.setDirection(DcMotor.Direction.REVERSE);
@@ -68,6 +69,7 @@ public class HalfPresetDrive extends LinearOpMode {
         int Edelta = 394;
         boolean calibrate = false;
         boolean reached = false;
+        double motorVelocity = 2000;
 
 //        while (!calibrate) {
 //            if (!magLimit.getState()){
@@ -101,37 +103,38 @@ public class HalfPresetDrive extends LinearOpMode {
 
             if (gamepad2.y) {
                 if (autoControl) {
-                    claw.setPosition(.6);
+                    claw.setPosition(.4);
                 }
                 else {
                     claw.setPosition(.2);
                 }
             }
             else if (gamepad1.y) {
-                claw.setPosition(.2);
+                claw.setPosition(0);
             }
 
             ///turn table motor controls
-            if (gamepad2.b & !redturnTable) {
-                redturnTable = true;
-                ttMotor.setPower(-1);
-            }
-            else if (gamepad2.b & redturnTable) {
-                ttMotor.setPower((0));
-                redturnTable = false;
-            }
+//            if (gamepad2.b & !redturnTable) {
+//                redturnTable = true;
+//                ttMotor.setPower(-1);
+//            }
+//            else if (gamepad2.b & redturnTable) {
+//                ttMotor.setPower((0));
+//                redturnTable = false;
+//            }
+//
+//            if (gamepad2.x & !blueturnTable) {
+//                blueturnTable = true;
+//                ttMotor.setPower(1);
+//            }
+//            else if (gamepad2.x & blueturnTable) {
+//                ttMotor.setPower((0));
+//                blueturnTable = false;
+//            }
 
-            if (gamepad2.x & !blueturnTable) {
-                blueturnTable = true;
-                ttMotor.setPower(1);
-            }
-            else if (gamepad2.x & blueturnTable) {
-                ttMotor.setPower((0));
-                blueturnTable = false;
-            }
 
 
-            if (gamepad2.dpad_up) { // WOBBLE
+            if (gamepad2.dpad_right) { // WOBBLE
                 wobbleLevel = true;
                 topMidLevel = false;
                 botPickupLevel = false;
@@ -139,7 +142,7 @@ public class HalfPresetDrive extends LinearOpMode {
                 autoControl = true;
                 reached = false;
             }
-            else if (gamepad2.dpad_right) { // TOP/MID
+            else if (gamepad2.dpad_up) { // TOP/MID
                 wobbleLevel = false;
                 topMidLevel = true;
                 botPickupLevel = false;
@@ -195,6 +198,10 @@ public class HalfPresetDrive extends LinearOpMode {
                 }
 
             }
+            else {
+                shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                shoulder.setPower(shoulderPower);
+            }
 
             if (elbowBrake) { // brakes only work if using arm manually
                 elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -205,13 +212,26 @@ public class HalfPresetDrive extends LinearOpMode {
                 elbow.setPower(elbowPower);
             }
 
+            //driver carousel motor control
+            double ttMotorPower = Range.clip(gamepad1.left_stick_x, -1, 1);
+            ttMotor.setPower(ttMotorPower);
+
+
             double x =  gamepad1.right_stick_x;
             double y =  -gamepad1.right_stick_y;
-            double motorVelocity = -gamepad1.left_stick_y * 2500;
+//            double motorVelocity = -gamepad1.left_stick_y * 2500;
+
             double leftDirection = y + x;
             double rightDirection = y - x;
             double leftVelocity   = leftDirection * motorVelocity;
             double rightVelocity   = rightDirection * motorVelocity;
+
+            if (gamepad1.right_bumper){ //speed drive
+                motorVelocity = 2500;
+            }
+            if (gamepad1.left_bumper){ //slug drive
+                motorVelocity = 750;
+            }
 
             bLeft.setVelocity(leftVelocity);
             fLeft.setVelocity(leftVelocity);
@@ -219,23 +239,48 @@ public class HalfPresetDrive extends LinearOpMode {
             fRight.setVelocity(rightVelocity);
 
             elbowPower = Range.clip(gamepad2.left_stick_y , -1.0, 1.0) * armSpeed;
+            shoulderPower = Range.clip(gamepad2.right_stick_y , -1.0, 1.0) * armSpeed;
+
+            if (gamepad2.left_bumper) {
+                bLeft.setPower(-1);
+                fLeft.setPower(-1);
+                bRight.setPower(1);
+                fRight.setPower(1);
+                sleep(100);
+                bLeft.setPower(0);
+                fLeft.setPower(0);
+                bRight.setPower(0);
+                fRight.setPower(0);
+            }
+
+            if (gamepad2.right_bumper) {
+                bLeft.setPower(1);
+                fLeft.setPower(1);
+                bRight.setPower(-1);
+                fRight.setPower(-1);
+                sleep(100);
+                bLeft.setPower(0);
+                fLeft.setPower(0);
+                bRight.setPower(0);
+                fRight.setPower(0);
+            }
 
             //elbow brake conditions
-            if (gamepad2.left_stick_button & !elbowBrake) {
+            if (gamepad2.x & !elbowBrake) {
                 elbow.setTargetPosition(elbowCurrentPosition);
                 elbowBrake = true;
 
             }
-            else if (gamepad2.left_stick_button & elbowBrake) {
+            else if (gamepad2.x & elbowBrake) {
                 elbowBrake = false;
             }
 
             //shoulder brake conditions
-            if (gamepad2.right_stick_button & !shoulderBrake) {
+            if (gamepad2.b & !shoulderBrake) {
                 shoulder.setTargetPosition(shoulderCurrentPosition);
                 shoulderBrake = true;
             }
-            else if (gamepad2.right_stick_button & shoulderBrake) {
+            else if (gamepad2.b & shoulderBrake) {
                 shoulderBrake = false;
             }
 
@@ -269,7 +314,7 @@ public class HalfPresetDrive extends LinearOpMode {
 
             telemetry.addData("","----------");
 
-            telemetry.addData("autoControl"         , "Start/Wobble: (%b), Top/Mid: (%b), Bot/Pickup: (%b), autoControl: (%b), Reached: (%b)", wobbleLevel, topMidLevel, autoControl, reached);
+            telemetry.addData("autoControl"         , "Start/Wobble: (%b), Top/Mid: (%b), Bot/Pickup: (%b), autoControl: (%b), Reached: (%b)", wobbleLevel, topMidLevel, botPickupLevel, autoControl, reached);
 
 
             if (magLimit.getState() == true) {

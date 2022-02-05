@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 @TeleOp(name="Event Drive", group="--")
-//@Disabled
+@Disabled
 public class EventDrive extends LinearOpMode {
 
     // Declare OpMode members.

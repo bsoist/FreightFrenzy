@@ -38,6 +38,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.teleop.HalfPresetDrive;
 
 import java.util.List;
 
@@ -51,8 +52,8 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@Autonomous(name = "Blue Warehouse", group = "-")
-// @Disabled
+@Autonomous(name = "Blue Warehouse", group = "-", preselectTeleOp = "HalfPresetDrive")
+//@Disabled
 public class BlueWarehouse extends LinearOpMode {
   /* Note: This sample uses the all-objects Tensor Flow model (FreightFrenzy_BCDM.tflite), which contains
    * the following 4 detectable objects
@@ -408,7 +409,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                 sleep(2000);
 
-                runStraight(120); // drive into warehouse
+                runStraight(130); // drive into warehouse
 
                 telemetry.addData("Auto:", "Complete :)");
                 telemetry.update();
