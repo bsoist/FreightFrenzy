@@ -249,7 +249,7 @@ public class RedCarousel extends LinearOpMode {
 
                 arcRight(39, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
 
-                sleep(2000);
+                sleep(1500);
 
                 if (bottomLevel){
                     //set arm to bottom preset
@@ -404,8 +404,6 @@ public class RedCarousel extends LinearOpMode {
 
                 arcRight(-30, 84.405);
 
-                rotateLeft(90); //rotate toward warehouse
-
                 if (bottomLevel){
                     rotateLeft(87);
                 }
@@ -416,17 +414,25 @@ public class RedCarousel extends LinearOpMode {
                 sleep(1000);
 
                 runStraight(56.5); // drive into carousel
-
                 sleep(1200);
 
-                ttMotor.setPower(-1); // turn carousel
-                fLeft.setPower(.4); //maintain contact on carousel
-                fRight.setPower(.4);
+                rotateLeft(10);
+
+                ttMotor.setPower(-1); //turn carousel
+                fLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                fRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                bLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                bRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                fLeft.setPower(.12);
+                fRight.setPower(.12);
+                bLeft.setPower(.08);
+                bRight.setPower(.08);//maintain contact on carousel
                 sleep(3000);
-                ttMotor.setPower(0);// done
+                ttMotor.setPower(0); // done
                 fLeft.setPower(0);
                 fRight.setPower(0);
 
+                rotateRight(10);
                 rotateRight(80); // turn towards square
                 sleep(1000);
                 runStraight(57); // drive into square

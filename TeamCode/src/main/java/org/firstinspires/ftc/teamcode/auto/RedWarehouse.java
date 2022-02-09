@@ -247,7 +247,7 @@ public class RedWarehouse extends LinearOpMode {
                 telemetry.addData("Auto:", "In Progress");
                 telemetry.update();
 
-                arcLeft(30, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
+                arcLeft(25, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
 
                 sleep(2000);
 
@@ -395,17 +395,21 @@ public class RedWarehouse extends LinearOpMode {
                     elbow.setVelocity(500);
 
                     sleep(3000);
-
-                    runStraight(25);// net (delta)x from arc = 27
-
-                    sleep(700);
                 }
                 else {
                     elbow.setTargetPosition(0);
                     sleep(800);
                 }
 
-                arcLeft(-30, 84.405);
+                arcLeft(-25, 84.405);
+
+                sleep(500);
+
+                if(bottomLevel){
+                    runStraight(30);// net (delta)x from arc = 27
+
+                    sleep(700);
+                }
 
                 rotateRight(90); //rotate toward warehouse
 

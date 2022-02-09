@@ -413,12 +413,18 @@ public class BlueCarousel extends LinearOpMode {
 
                 sleep(1000);
 
-                runStraight(56.5); // drive into carousel
+                runStraight(57); // drive into carousel
                 sleep(1200);
 
                 ttMotor.setPower(1); //turn carousel
-                fLeft.setPower(.4); //maintain contact on carousel
-                fRight.setPower(.4);
+                fLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                fRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                bLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                bRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                fLeft.setPower(.12);
+                fRight.setPower(.12);
+                bLeft.setPower(.08);
+                bRight.setPower(.08);//maintain contact on carousel
                 sleep(3000);
                 ttMotor.setPower(0); // done
                 fLeft.setPower(0);

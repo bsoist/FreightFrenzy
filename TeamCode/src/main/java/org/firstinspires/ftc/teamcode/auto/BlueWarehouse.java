@@ -250,7 +250,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                 arcRight(39, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
 
-                sleep(2000);
+                sleep(1500);
 
                 if (bottomLevel){
                     //set arm to bottom preset
@@ -409,7 +409,7 @@ public class BlueWarehouse extends LinearOpMode {
 
                 sleep(2000);
 
-                runStraight(130); // drive into warehouse
+                runStraight(125); // drive into warehouse
 
                 telemetry.addData("Auto:", "Complete :)");
                 telemetry.update();
