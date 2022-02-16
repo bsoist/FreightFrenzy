@@ -279,7 +279,7 @@ public class BlueCarousel extends LinearOpMode {
                 }
                 else if (topLevel){
                     //set arm to top preset
-                    elbow.setTargetPosition(-160 + Edelta);
+                    elbow.setTargetPosition(-165 + Edelta);
                     shoulder.setTargetPosition(0 - Sdelta);
 
                     elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -320,7 +320,7 @@ public class BlueCarousel extends LinearOpMode {
                 telemetry.update();
 
                 if (bottomLevel) {
-                    runStraight(17); //approach hub
+                    runStraight(19); //approach hub
                 }
                 else if(middleLevel){
                     runStraight(38); //approach hub
@@ -365,7 +365,7 @@ public class BlueCarousel extends LinearOpMode {
 
                 // back away from hub
                 if (bottomLevel) {
-                    runStraight(-17 + 7);
+                    runStraight(-19 + 7);
                 }
                 else if(middleLevel){
                     runStraight(-38 + 7);
@@ -404,11 +404,12 @@ public class BlueCarousel extends LinearOpMode {
                 }
 
                 arcLeft(-25, 84.405);
+
                 if (bottomLevel){
-                    rotateRight(87);
+                    rotateRight(85);
                 }
                 else{
-                    rotateRight(90); //rotate toward warehouse
+                    rotateRight(88); //rotate toward warehouse
                 }
 
                 sleep(1000);
@@ -430,7 +431,7 @@ public class BlueCarousel extends LinearOpMode {
                 fLeft.setPower(0);
                 fRight.setPower(0);
 
-                rotateLeft(80); //turn towards square
+                rotateLeft(88); //turn towards square
                 sleep(1000);
                 runStraight(57); //drive into square
 

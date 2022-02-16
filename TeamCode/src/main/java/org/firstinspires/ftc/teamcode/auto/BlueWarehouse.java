@@ -248,7 +248,7 @@ public class BlueWarehouse extends LinearOpMode {
                 telemetry.addData("Auto:", "In Progress");
                 telemetry.update();
 
-                arcRight(39, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
+                arcRight(32, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
 
                 sleep(1500);
 
@@ -321,7 +321,7 @@ public class BlueWarehouse extends LinearOpMode {
                 telemetry.update();
 
                 if (bottomLevel) {
-                    runStraight(14); //approach hub
+                    runStraight(16); //approach hub
                 }
                 else if(middleLevel){
                     runStraight(38); //approach hub
@@ -342,14 +342,14 @@ public class BlueWarehouse extends LinearOpMode {
                 sleep(600);
 
                 if (bottomLevel | middleLevel) {
-                    claw.setPosition(.6);
+                    claw.setPosition(.65); //open small amount to not hit other levels
+                    sleep(900);
+                    claw.setPosition(1); //close
                 }
                 else {
                     claw.setPosition(.4);
+                    sleep(600);
                 }
-                sleep(900);
-
-                claw.setPosition(1); //close
 
                 telemetry.addData("Cargo Release:", "Done");
                 telemetry.addData("Barcode Position", drive);
@@ -364,48 +364,51 @@ public class BlueWarehouse extends LinearOpMode {
                 shoulder.setVelocity(0);
                 shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                // back slightly from hub
-                if (bottomLevel){
-                    runStraight(-10);
-                }else if (middleLevel) {
-                    runStraight(-11); // net (delta)x = 38
-                }else {
-                    runStraight(-13); // net (delta)x = 27
-                }
-
-
-                if (!bottomLevel) {
-                    elbow.setVelocity(100);
-                }
-
-                sleep(500);
-
+                // back away from hub ( 7 cm from field panels )
                 if (bottomLevel) {
-                    shoulder.setTargetPosition(0);
-                    elbow.setTargetPosition(0);
-
-                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    shoulder.setVelocity(1500);
-
-                    sleep(700);
-
-                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    elbow.setVelocity(500);
-
-                    sleep(3000);
-
-                    runStraight(25);// net (delta)x from arc = 27
-
-                    sleep(700);
+                    runStraight(-10);
+                }
+                else if(middleLevel){
+                    runStraight(-14);
                 }
                 else {
-                    elbow.setTargetPosition(0);
-                    sleep(800);
+                    runStraight(-14);
                 }
 
-                arcRight(-30, 84.405);
+                if (topLevel){
+                    claw.setPosition(1); //close
+                }
 
-                rotateLeft(90); //rotate toward warehouse
+                elbow.setTargetPosition(0);
+                shoulder.setTargetPosition(0);
+
+                if (bottomLevel){ // if shoulder down
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    shoulder.setVelocity(1500); // move shoulder back to initial position
+
+                    sleep(500);
+
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION); // move arm back to initial position
+                    elbow.setVelocity(500);
+
+                    sleep(2000);
+
+                    runStraight(30);
+
+                }
+                else { // if shoulder upright
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    shoulder.setVelocity(1000); // move shoulder back to initial position
+
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elbow.setVelocity(100); //release arm
+
+                    sleep(1000);
+                }
+
+                arcRight(-32, 84.405);
+
+                rotateLeft(85); //rotate toward warehouse
 
                 sleep(2000);
 

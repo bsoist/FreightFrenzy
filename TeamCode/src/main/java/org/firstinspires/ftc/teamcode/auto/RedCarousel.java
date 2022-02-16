@@ -247,7 +247,7 @@ public class RedCarousel extends LinearOpMode {
                 telemetry.addData("Auto:", "In Progress");
                 telemetry.update();
 
-                arcRight(39, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
+                arcRight(32, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
 
                 sleep(1500);
 
@@ -402,10 +402,10 @@ public class RedCarousel extends LinearOpMode {
                     sleep(1000);
                 }
 
-                arcRight(-30, 84.405);
+                arcRight(-32, 84.405);
 
                 if (bottomLevel){
-                    rotateLeft(87);
+                    rotateLeft(82);
                 }
                 else{
                     rotateLeft(90); //rotate toward warehouse
