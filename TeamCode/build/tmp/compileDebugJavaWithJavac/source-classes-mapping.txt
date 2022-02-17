@@ -1,5 +1,7 @@
 org/firstinspires/ftc/teamcode/auto/RedCarousel.java
  org.firstinspires.ftc.teamcode.auto.RedCarousel
+org/firstinspires/ftc/teamcode/teleop/NewIntake.java
+ org.firstinspires.ftc.teamcode.teleop.NewIntake
 org/firstinspires/ftc/teamcode/test/calibration.java
  org.firstinspires.ftc.teamcode.test.calibration
 org/firstinspires/ftc/teamcode/teleop/HalfPresetDrive.java
