@@ -1,9 +1,16 @@
 org/firstinspires/ftc/teamcode/drivetesting/mainRobotTest.java
  org.firstinspires.ftc.teamcode.drivetesting.mainRobotTest
+org/firstinspires/ftc/teamcode/opencv_test.java
+ org.firstinspires.ftc.teamcode.opencv_test
+ org.firstinspires.ftc.teamcode.opencv_test$Location
 org/firstinspires/ftc/teamcode/auto/TensorFlowObjectDetectionWebcam.java
  org.firstinspires.ftc.teamcode.auto.TensorFlowObjectDetectionWebcam
-org/firstinspires/ftc/teamcode/auto/Archmere.java
- org.firstinspires.ftc.teamcode.auto.Archmere
+org/firstinspires/ftc/teamcode/opencv_autotest.java
+ org.firstinspires.ftc.teamcode.opencv_autotest
+ org.firstinspires.ftc.teamcode.opencv_autotest$1
+ org.firstinspires.ftc.teamcode.opencv_autotest$2
+org/firstinspires/ftc/teamcode/auto/BlueCarousel.java
+ org.firstinspires.ftc.teamcode.auto.BlueCarousel
 org/firstinspires/ftc/teamcode/comp/presetCalibration.java
  org.firstinspires.ftc.teamcode.comp.presetCalibration
 org/firstinspires/ftc/teamcode/BuildConfig.java
