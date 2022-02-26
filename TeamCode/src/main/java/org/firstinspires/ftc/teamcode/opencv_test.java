@@ -19,13 +19,13 @@ public class opencv_test extends OpenCvPipeline {
     private Location location;
 
     static final Rect MIDDLE_ROI = new Rect(
-            new Point(40, 35),
-            new Point(120, 75));
+            new Point(10, 60),
+            new Point(160, 200));
     static final Rect RIGHT_ROI = new Rect(
-            new Point(140, 35),
-            new Point(220, 75));
+            new Point(170, 60),
+            new Point(315, 200));
 
-    static double PERCENT_COLOR_THRESHOLD = 0.4;
+    static double PERCENT_COLOR_THRESHOLD = .15;
 
     public opencv_test (Telemetry t) { telemetry = t; }
 
@@ -75,10 +75,14 @@ public class opencv_test extends OpenCvPipeline {
 
         Imgproc.cvtColor(mat, mat, Imgproc.COLOR_GRAY2RGB);
 
-        Scalar colorDuck = new Scalar(255, 0, 0);
+        Scalar colorNone = new Scalar(255, 0, 0);
+        Scalar colorDuck = new Scalar(0, 255, 0);
 
-        Imgproc.rectangle(mat, MIDDLE_ROI, colorDuck);
-        Imgproc.rectangle(mat, RIGHT_ROI, colorDuck);
+        Imgproc.rectangle(mat, MIDDLE_ROI, location == Location.MIDDLE? colorDuck:colorNone);
+        Imgproc.rectangle(mat, RIGHT_ROI, location == Location.RIGHT? colorDuck:colorNone);
+
+//        Imgproc.rectangle(mat, MIDDLE_ROI, colorDuck);
+//        Imgproc.rectangle(mat, RIGHT_ROI, colorDuck);
 
         return mat;
 
