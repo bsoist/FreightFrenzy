@@ -160,6 +160,8 @@ public class RedWarehouse extends LinearOpMode {
 
         int Sdelta = 1504;
         int Edelta = 394;
+        double robotOuterRadius = 40.5;
+        double radiusHubtoRightSide = 32.5;
 
         /**
          * Activate TensorFlow Object Detection before we wait for the start command.

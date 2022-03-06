@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import android.graphics.Paint;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.*;
@@ -53,8 +54,6 @@ public class NewIntake extends LinearOpMode {
         fRight.setDirection(DcMotor.Direction.REVERSE);
         leftIntake.setDirection(CRServo.Direction.REVERSE);
 
-        elbow.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
-
         double armSpeed = .75;
         double elbowPower = 0;
         double shoulderPower = 0;
@@ -64,16 +63,34 @@ public class NewIntake extends LinearOpMode {
         boolean blueturnTable = false;
         boolean redturnTable = false;
         boolean topMidLevel = false;
-        boolean botPickupLevel = false;
+        boolean pickupLevel = false;
         boolean wobbleLevel = false;
         boolean autoControl = false;
+        boolean Cap = false;
+        boolean Zero = false;
+        boolean topLevel = false;
+        boolean midLevel = false;
+        boolean botLevel = false;
         int Sdelta = 1504;
         int Edelta = 394;
         boolean calibrate = false;
         boolean reached = false;
         double motorVelocity = 2000;
-        boolean output;
-        boolean intake;
+        boolean output = false;
+        boolean intake = false;
+        int shoulderTopMidBot = -555;
+        int shoulderPickup = -1065;
+        int shoulderWobble = -838;
+        int shoulderZero = -15;
+        int shoulderCap = -810;
+        int elbowTop = 250;
+        int elbowMid = 130;
+        int elbowBot = 31;
+        int elbowPickup = 132;
+        int elbowWobble = 75;
+        int elbowZero = 20;
+        int elbowCap = 390;
+
 
 //        while (!calibrate) {
 //            if (!magLimit.getState()){
@@ -117,7 +134,7 @@ public class NewIntake extends LinearOpMode {
                 claw.setPosition(0);
             }
 
-            ///turn table motor controls
+            ///old turn table motor controls
 //            if (gamepad2.b & !redturnTable) {
 //                redturnTable = true;
 //                ttMotor.setPower(-1);
@@ -136,28 +153,52 @@ public class NewIntake extends LinearOpMode {
 //                blueturnTable = false;
 //            }
 
-
-
             if (gamepad2.dpad_right) { // WOBBLE
-                wobbleLevel = true;
                 topMidLevel = false;
-                botPickupLevel = false;
+                wobbleLevel = true;
+                pickupLevel = false;
+                Zero = false;
+                Cap = false;
 
                 autoControl = true;
                 reached = false;
             }
             else if (gamepad2.dpad_up) { // TOP/MID
-                wobbleLevel = false;
                 topMidLevel = true;
-                botPickupLevel = false;
+                wobbleLevel = false;
+                pickupLevel = false;
+                Zero = false;
+                Cap = false;
 
                 autoControl = true;
                 reached = false;
             }
-            else if (gamepad2.dpad_down) { // BOT/PICKUP
-                wobbleLevel = false;
+            else if (gamepad2.dpad_down) { //  PICKUP
                 topMidLevel = false;
-                botPickupLevel = true;
+                wobbleLevel = false;
+                pickupLevel = true;
+                Zero = false;
+                Cap = false;
+
+                autoControl = true;
+                reached = false;
+            }
+            else if (gamepad2.right_stick_button && gamepad2.left_stick_button) {
+                topMidLevel = false;
+                wobbleLevel = false;
+                pickupLevel = false;
+                Zero = true;
+                Cap = false;
+
+                autoControl = true;
+                reached = false;
+            }
+            if (gamepad2.x) {
+                topMidLevel = false;
+                wobbleLevel = false;
+                pickupLevel = false;
+                Zero = false;
+                Cap = true;
 
                 autoControl = true;
                 reached = false;
@@ -165,26 +206,67 @@ public class NewIntake extends LinearOpMode {
             else if (gamepad2.dpad_left) { // AUTOCONTROL OFF
                 wobbleLevel = false;
                 topMidLevel = false;
-                botPickupLevel = false;
+                pickupLevel = false;
+                Zero = false;
+                Cap = false;
+
                 autoControl = false;
                 reached = false;
             }
 
+            if (gamepad2.y) {
+                topLevel = true;
+                midLevel = false;
+                botLevel = false;
+            }
+            else if (gamepad2.b) {
+                topLevel = false;
+                midLevel = true;
+                botLevel = false;
+            }
+            else if (gamepad2.a) {
+                topLevel = false;
+                midLevel = false;
+                botLevel = true;
+            }
+
             if (wobbleLevel) { //needs testing
-                shoulder.setTargetPosition(-100);
+                shoulder.setTargetPosition(shoulderWobble);
+                elbow.setTargetPosition(elbowWobble);
             }
             else if (topMidLevel) { //correct
                 //set arm to top preset
-                shoulder.setTargetPosition(0 - Sdelta);
+                shoulder.setTargetPosition(shoulderTopMidBot);
+                if (topLevel) {
+                    elbow.setTargetPosition(elbowTop);
+                } else if (midLevel) {
+                    elbow.setTargetPosition(elbowMid);
+                } else if (botLevel) {
+                    elbow.setTargetPosition(elbowBot);
+                } else {
+                    elbow.setTargetPosition(elbowTop);
+                }
+
             }
-            else if (botPickupLevel) { // correct
-                shoulder.setTargetPosition(-1937 - Sdelta);
+            else if (pickupLevel) { // correct
+                shoulder.setTargetPosition(shoulderPickup);
+                elbow.setTargetPosition(elbowPickup);
+            }
+            else if (Cap) {
+                shoulder.setTargetPosition(shoulderCap);
+                elbow.setTargetPosition(elbowCap);
+            }
+            else if (Zero) {
+                shoulder.setTargetPosition(shoulderZero);
+                elbow.setTargetPosition(elbowZero);
             }
 
             if (autoControl) {
-                if (reached){
-                    shoulder.setVelocity(0);
-                }
+                elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                if (Zero) { elbow.setVelocity(600); }
+                else { elbow.setVelocity(2000); }
+
+                if (reached){ shoulder.setVelocity(300); }
                 else { //preset power management
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     shoulder.setVelocity(1200);
@@ -198,23 +280,26 @@ public class NewIntake extends LinearOpMode {
                             reached = true;
                         }
                     }
-
+                }
+            } else {
+                // (shoulder and elbow brake if autocontrol = false)
+                if (shoulderBrake) { // brakes only work if using arm manually
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    shoulder.setVelocity(1800);
+                } else {
+                    shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    shoulder.setPower(shoulderPower);
                 }
 
-            }
-            else {
-                shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                shoulder.setPower(shoulderPower);
+                if (elbowBrake) { // brakes only work if using arm manually
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elbow.setVelocity(2500);
+                } else {
+                    elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    elbow.setPower(elbowPower);
+                }
             }
 
-            if (elbowBrake) { // brakes only work if using arm manually
-                elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elbow.setVelocity(2500);
-            }
-            else {
-                elbow.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                elbow.setPower(elbowPower);
-            }
 
             //driver carousel motor control
             double ttMotorPower = Range.clip(gamepad1.left_stick_x, -1, 1);
@@ -253,22 +338,25 @@ public class NewIntake extends LinearOpMode {
                 intake = true;
                 output = false;
             }
-            else if (gamepad2.right_trigger < .15 && gamepad2.left_trigger < .15) {
+            else if (gamepad2.right_trigger > -.15 && gamepad2.left_trigger > -.15) {
                 intake = false;
                 output = false;
+                rightIntake.setPower(0);
+                leftIntake.setPower(0);
             }
-            else {
-                intake = false;
-                output = false;
-            }
+//            else {
+//                intake = false;
+//                output = false;
+//            }
+
+            double intakePower = gamepad2.right_trigger;
+            double outputPower = gamepad2.left_trigger;
 
             if (intake){
-                double intakePower = gamepad2.right_trigger;
                 rightIntake.setPower(intakePower);
                 leftIntake.setPower(intakePower);
             }
             if (output){
-                double outputPower = gamepad2.left_trigger;
                 rightIntake.setPower(-outputPower);
                 leftIntake.setPower(-outputPower);
             }
@@ -342,12 +430,14 @@ public class NewIntake extends LinearOpMode {
 
             telemetry.addData("","----------");
 
-            telemetry.addData("Claw"                , "Position: (%.2f)"         , claw.getPosition()
+            telemetry.addData("Intake",
+                    "Left Trig: (%.2f), Right Trig: (%.2f), Intake: (%b) ((%.2f)), Output: (%b) ((%.2f))",
+                    gamepad2.left_trigger, gamepad2.right_trigger, intake, intakePower, output, outputPower
             );
 
             telemetry.addData("","----------");
 
-            telemetry.addData("autoControl"         , "Start/Wobble: (%b), Top/Mid: (%b), Bot/Pickup: (%b), autoControl: (%b), Reached: (%b)", wobbleLevel, topMidLevel, botPickupLevel, autoControl, reached);
+            telemetry.addData("autoControl"         , "Wobble: (%b), Top/Mid: (%b), Pickup: (%b), autoControl: (%b), Reached: (%b)", wobbleLevel, topMidLevel, pickupLevel, autoControl, reached);
 
 
             if (magLimit.getState() == true) {
