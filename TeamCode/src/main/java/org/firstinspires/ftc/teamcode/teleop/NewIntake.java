@@ -78,8 +78,8 @@ public class NewIntake extends LinearOpMode {
         double motorVelocity = 2000;
         boolean output = false;
         boolean intake = false;
-        int shoulderTopMidBot = -555;
-        int shoulderPickup = -1065;
+        int shoulderTopMidBot = -700;
+        int shoulderPickup = -1095;
         int shoulderWobble = -838;
         int shoulderZero = -15;
         int shoulderCap = -810;
@@ -385,6 +385,7 @@ public class NewIntake extends LinearOpMode {
                 bRight.setPower(0);
                 fRight.setPower(0);
             }
+
 
             //elbow brake conditions
             if (gamepad2.x & !elbowBrake) {
