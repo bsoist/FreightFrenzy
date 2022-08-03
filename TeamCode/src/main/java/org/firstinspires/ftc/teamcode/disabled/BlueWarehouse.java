@@ -26,7 +26,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.disabled;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -38,6 +38,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import java.util.List;
 
@@ -51,9 +52,9 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@Autonomous(name = "Red Carousel", group = "--", preselectTeleOp = "HalfPresetDrive")
-//@Disabled
-public class RedCarousel extends LinearOpMode {
+@Autonomous(name = "Blue Warehouse", group = "-", preselectTeleOp = "HalfPresetDrive")
+@Disabled
+public class BlueWarehouse extends LinearOpMode {
   /* Note: This sample uses the all-objects Tensor Flow model (FreightFrenzy_BCDM.tflite), which contains
    * the following 4 detectable objects
    *  0: Ball,
@@ -320,7 +321,7 @@ public class RedCarousel extends LinearOpMode {
                 telemetry.update();
 
                 if (bottomLevel) {
-                    runStraight(14); //approach hub
+                    runStraight(16); //approach hub
                 }
                 else if(middleLevel){
                     runStraight(38); //approach hub
@@ -365,13 +366,13 @@ public class RedCarousel extends LinearOpMode {
 
                 // back away from hub ( 7 cm from field panels )
                 if (bottomLevel) {
-                    runStraight(-14 + 7);
+                    runStraight(-10);
                 }
                 else if(middleLevel){
-                    runStraight(-38 + 7);
+                    runStraight(-14);
                 }
                 else {
-                    runStraight(-40 + 7);
+                    runStraight(-14);
                 }
 
                 if (topLevel){
@@ -391,6 +392,9 @@ public class RedCarousel extends LinearOpMode {
                     elbow.setVelocity(500);
 
                     sleep(2000);
+
+                    runStraight(30);
+
                 }
                 else { // if shoulder upright
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -404,38 +408,11 @@ public class RedCarousel extends LinearOpMode {
 
                 arcRight(-32, 84.405);
 
-                if (bottomLevel){
-                    rotateLeft(82);
-                }
-                else{
-                    rotateLeft(90); //rotate toward warehouse
-                }
+                rotateLeft(85); //rotate toward warehouse
 
-                sleep(1000);
+                sleep(2000);
 
-                runStraight(56.5); // drive into carousel
-                sleep(1200);
-
-                rotateLeft(10);
-
-                ttMotor.setPower(-1); //turn carousel
-                fLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                fRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                bLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                bRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                fLeft.setPower(.12);
-                fRight.setPower(.12);
-                bLeft.setPower(.08);
-                bRight.setPower(.08);//maintain contact on carousel
-                sleep(3000);
-                ttMotor.setPower(0); // done
-                fLeft.setPower(0);
-                fRight.setPower(0);
-
-                rotateRight(10);
-                rotateRight(80); // turn towards square
-                sleep(1000);
-                runStraight(57); // drive into square
+                runStraight(125); // drive into warehouse
 
                 telemetry.addData("Auto:", "Complete :)");
                 telemetry.update();

@@ -82,15 +82,15 @@ public class NewIntake extends LinearOpMode {
         int shoulderPickup = -1095;
         int shoulderWobble = -838;
         int shoulderZero = -15;
-        int shoulderCap = -810;
-        int elbowTop = 250;
-        int elbowMid = 130;
-        int elbowBot = 31;
-        int elbowPickup = 132;
-        int elbowWobble = 75;
+        int shoulderCap = -866;
+        int elbowTop = 283;
+        int elbowMid = 190;
+        int elbowBot = 73;
+        int elbowPickup = 133;
+        int elbowWobble = 77;
         int elbowZero = 20;
         int elbowCap = 390;
-
+//            -866, 401 (387)
 
 //        while (!calibrate) {
 //            if (!magLimit.getState()){
@@ -158,7 +158,6 @@ public class NewIntake extends LinearOpMode {
                 wobbleLevel = true;
                 pickupLevel = false;
                 Zero = false;
-                Cap = false;
 
                 autoControl = true;
                 reached = false;
@@ -168,7 +167,6 @@ public class NewIntake extends LinearOpMode {
                 wobbleLevel = false;
                 pickupLevel = false;
                 Zero = false;
-                Cap = false;
 
                 autoControl = true;
                 reached = false;
@@ -178,7 +176,6 @@ public class NewIntake extends LinearOpMode {
                 wobbleLevel = false;
                 pickupLevel = true;
                 Zero = false;
-                Cap = false;
 
                 autoControl = true;
                 reached = false;
@@ -188,17 +185,6 @@ public class NewIntake extends LinearOpMode {
                 wobbleLevel = false;
                 pickupLevel = false;
                 Zero = true;
-                Cap = false;
-
-                autoControl = true;
-                reached = false;
-            }
-            if (gamepad2.x) {
-                topMidLevel = false;
-                wobbleLevel = false;
-                pickupLevel = false;
-                Zero = false;
-                Cap = true;
 
                 autoControl = true;
                 reached = false;
@@ -208,7 +194,6 @@ public class NewIntake extends LinearOpMode {
                 topMidLevel = false;
                 pickupLevel = false;
                 Zero = false;
-                Cap = false;
 
                 autoControl = false;
                 reached = false;
@@ -218,16 +203,25 @@ public class NewIntake extends LinearOpMode {
                 topLevel = true;
                 midLevel = false;
                 botLevel = false;
+                Cap = false;
             }
             else if (gamepad2.b) {
                 topLevel = false;
                 midLevel = true;
                 botLevel = false;
+                Cap = false;
             }
             else if (gamepad2.a) {
                 topLevel = false;
                 midLevel = false;
                 botLevel = true;
+                Cap = false;
+            }
+            else if (gamepad2.x) {
+                topLevel = false;
+                midLevel = false;
+                botLevel = false;
+                Cap = true;
             }
 
             if (wobbleLevel) { //needs testing
@@ -236,13 +230,22 @@ public class NewIntake extends LinearOpMode {
             }
             else if (topMidLevel) { //correct
                 //set arm to top preset
-                shoulder.setTargetPosition(shoulderTopMidBot);
+                if (Cap){
+                    shoulder.setTargetPosition(shoulderCap);
+                } else if (botLevel){
+                    shoulder.setTargetPosition(shoulderWobble);
+                } else {
+                    shoulder.setTargetPosition(shoulderTopMidBot);
+                }
+
                 if (topLevel) {
                     elbow.setTargetPosition(elbowTop);
                 } else if (midLevel) {
                     elbow.setTargetPosition(elbowMid);
                 } else if (botLevel) {
-                    elbow.setTargetPosition(elbowBot);
+                    elbow.setTargetPosition(elbowWobble+45);
+                } else if (Cap) {
+                    elbow.setTargetPosition(elbowCap);
                 } else {
                     elbow.setTargetPosition(elbowTop);
                 }
@@ -338,7 +341,7 @@ public class NewIntake extends LinearOpMode {
                 intake = true;
                 output = false;
             }
-            else if (gamepad2.right_trigger > -.15 && gamepad2.left_trigger > -.15) {
+            else if (gamepad2.right_trigger > -.2 && gamepad2.left_trigger > -.2) {
                 intake = false;
                 output = false;
                 rightIntake.setPower(0);

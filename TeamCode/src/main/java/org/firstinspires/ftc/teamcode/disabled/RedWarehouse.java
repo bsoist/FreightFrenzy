@@ -26,7 +26,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.disabled;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -38,8 +38,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.teamcode.teleop.HalfPresetDrive;
-
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import java.util.List;
 
 /**
@@ -52,9 +51,9 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@Autonomous(name = "Blue Warehouse", group = "-", preselectTeleOp = "HalfPresetDrive")
-//@Disabled
-public class BlueWarehouse extends LinearOpMode {
+@Autonomous(name = "Red Warehouse", group = "--", preselectTeleOp = "HalfPresetDrive")
+@Disabled
+public class RedWarehouse extends LinearOpMode {
   /* Note: This sample uses the all-objects Tensor Flow model (FreightFrenzy_BCDM.tflite), which contains
    * the following 4 detectable objects
    *  0: Ball,
@@ -161,6 +160,8 @@ public class BlueWarehouse extends LinearOpMode {
 
         int Sdelta = 1504;
         int Edelta = 394;
+        double robotOuterRadius = 40.5;
+        double radiusHubtoRightSide = 32.5;
 
         /**
          * Activate TensorFlow Object Detection before we wait for the start command.
@@ -248,9 +249,9 @@ public class BlueWarehouse extends LinearOpMode {
                 telemetry.addData("Auto:", "In Progress");
                 telemetry.update();
 
-                arcRight(32, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
+                arcLeft(25, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
 
-                sleep(1500);
+                sleep(2000);
 
                 if (bottomLevel){
                     //set arm to bottom preset
@@ -321,7 +322,7 @@ public class BlueWarehouse extends LinearOpMode {
                 telemetry.update();
 
                 if (bottomLevel) {
-                    runStraight(16); //approach hub
+                    runStraight(19); //approach hub
                 }
                 else if(middleLevel){
                     runStraight(38); //approach hub
@@ -364,55 +365,59 @@ public class BlueWarehouse extends LinearOpMode {
                 shoulder.setVelocity(0);
                 shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                // back away from hub ( 7 cm from field panels )
-                if (bottomLevel) {
+                // back slightly from hub
+                if (bottomLevel){
                     runStraight(-10);
-                }
-                else if(middleLevel){
-                    runStraight(-14);
-                }
-                else {
-                    runStraight(-14);
+                }else if (middleLevel) {
+                    runStraight(-11); // net (delta)x = 38
+                }else {
+                    runStraight(-13); // net (delta)x = 27
                 }
 
                 if (topLevel){
                     claw.setPosition(1); //close
                 }
 
-                elbow.setTargetPosition(0);
-                shoulder.setTargetPosition(0);
-
-                if (bottomLevel){ // if shoulder down
-                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    shoulder.setVelocity(1500); // move shoulder back to initial position
-
-                    sleep(500);
-
-                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION); // move arm back to initial position
-                    elbow.setVelocity(500);
-
-                    sleep(2000);
-
-                    runStraight(30);
-
+                if (!bottomLevel) {
+                    elbow.setVelocity(100);
                 }
-                else { // if shoulder upright
+
+                sleep(500);
+
+                if (bottomLevel) {
+                    shoulder.setTargetPosition(0);
+                    elbow.setTargetPosition(0);
+
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    shoulder.setVelocity(1000); // move shoulder back to initial position
+                    shoulder.setVelocity(1500);
+
+                    sleep(700);
 
                     elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    elbow.setVelocity(100); //release arm
+                    elbow.setVelocity(500);
 
-                    sleep(1000);
+                    sleep(3000);
+                }
+                else {
+                    elbow.setTargetPosition(0);
+                    sleep(800);
                 }
 
-                arcRight(-32, 84.405);
+                arcLeft(-25, 84.405);
 
-                rotateLeft(85); //rotate toward warehouse
+                sleep(500);
+
+                if(bottomLevel){
+                    runStraight(30);// net (delta)x from arc = 27
+
+                    sleep(700);
+                }
+
+                rotateRight(90); //rotate toward warehouse
 
                 sleep(2000);
 
-                runStraight(125); // drive into warehouse
+                runStraight(140); // drive into warehouse
 
                 telemetry.addData("Auto:", "Complete :)");
                 telemetry.update();

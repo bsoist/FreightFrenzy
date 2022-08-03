@@ -15,19 +15,19 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 @Autonomous(name = "OpenCVTest")
 //@Disabled
 public class openCVtest extends LinearOpMode {
-    OpenCvCamera Camera;
+    OpenCvCamera camera;
+    openCVTeamMarkerDetection pipeline;
+    openCVTeamMarkerDetection.Location snapshotAnalysis = openCVTeamMarkerDetection.Location.RIGHT; // default
     @Override
     public void runOpMode() throws InterruptedException {
+
         int cameraMonitorViewId = hardwareMap.appContext
                 .getResources()
                 .getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        WebcamName Webcam = hardwareMap.get(WebcamName.class, "Webcam 1");
+        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        pipeline = new openCVTeamMarkerDetection();
+        camera.setPipeline(pipeline);
 
-        OpenCvCamera camera = OpenCvCameraFactory.getInstance().createWebcam(Webcam, cameraMonitorViewId);
-
-        openCVTeamMarkerDetection detector = new openCVTeamMarkerDetection(telemetry);
-
-        camera.setPipeline(detector);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
@@ -46,7 +46,7 @@ public class openCVtest extends LinearOpMode {
         });
 
         waitForStart();
-        switch (detector.getLocation()) {
+        switch (pipeline.getLocation()) {
             case LEFT:
 //                botLevel = true;
                 break;

@@ -26,7 +26,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.firstinspires.ftc.teamcode.test;
+package org.firstinspires.ftc.teamcode.auto;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
@@ -38,6 +38,9 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.*;
+import org.firstinspires.ftc.teamcode.test.openCVTeamMarkerDetection;
+import org.opencv.core.Core;
+import org.opencv.core.Scalar;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -45,11 +48,12 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 @Autonomous(name = "NewNav", group = "", preselectTeleOp = "NewIntake")
 //@Disabled
 public class newNav extends LinearOpMode {
-    OpenCvCamera Camera;
+    OpenCvCamera camera;
     openCVTeamMarkerDetection pipeline;
     openCVTeamMarkerDetection.Location snapshotAnalysis = openCVTeamMarkerDetection.Location.RIGHT; // default
 
@@ -72,16 +76,19 @@ public class newNav extends LinearOpMode {
     Acceleration gravity;
 
     //global variables
-    static final double     DRIVE_SPEED             = 0.4;     // (40% of 2500 ticks/rev = 1000)
-    static final double     ARC_SPEED               = 0.4;
-    static final double     TURN_SPEED              = 0.4;
+    static final double     DRIVE_SPEED             = .8;     // (40% of 2500 ticks/rev = 1000)
+    static final double     ARC_SPEED               = .5;
+    static final double     TURN_SPEED              = .5;
 
     static final double     HEADING_THRESHOLD       = 1 ;      // As tight as we can make it with an integer gyro
     static final double     P_TURN_COEFF            = .05;     // Larger is more responsive, but also less stable
     static final double     P_DRIVE_COEFF           = .1;     // Larger is more responsive, but also less stable
 
     static final double robotRadius = 40.5;
-    static final double radiusHubtoRightSide = 34.5;
+    static final double radiusToHub = 34.5;
+
+    boolean red = false;
+    boolean blue = true;
 
     //arm preset levels
     boolean bottomLevel = false;
@@ -89,29 +96,40 @@ public class newNav extends LinearOpMode {
     boolean topLevel = false;
 
     //arm variables
-    int shoulderTopMid = -555;
-    int shoulderBot = 0; //NEED A VALUE
-    int shoulderLow = -838;
-    int shoulderPickup = -1065;
-    int elbowTop = 250;
-    int elbowMid = 130;
-    int elbowBot = 41;
-    int elbowLow = 75;
-    int elbowPickup = 128;
+    int shoulderTopMidBot = -700;
+    int shoulderPickup = -1095;
+    int shoulderWobble = -838;
+    int shoulderZero = -15;
+    int shoulderCap = -866;
+    int elbowTop = 293;
+    int elbowMid = 190;
+    int elbowBot = 73;
+    int elbowPickup = 133;
+    int elbowWobble = 91;
+    int elbowZero = 20;
+    int elbowCap = 390;
+
+    double outputTimer = 1.5;
+    double intakeTimer = outputTimer;
+    double carouselTimer = 4.5;
+
+    double startingAngle = 9.2;
+
+    double drivetowardshub = 42;
+    double backawayfromhub = -12;
 
     @Override
     public void runOpMode()  throws InterruptedException {
         //camera initialization
+//        openCVTeamMarkerDetection detector = new openCVTeamMarkerDetection(telemetry);
+//        camera.setPipeline(detector);
         int cameraMonitorViewId = hardwareMap.appContext
                 .getResources()
                 .getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        WebcamName Webcam = hardwareMap.get(WebcamName.class, "Webcam 1");
+        camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        pipeline = new openCVTeamMarkerDetection();
+        camera.setPipeline(pipeline);
 
-        OpenCvCamera camera = OpenCvCameraFactory.getInstance().createWebcam(Webcam, cameraMonitorViewId);
-
-        openCVTeamMarkerDetection detector = new openCVTeamMarkerDetection(telemetry);
-
-        camera.setPipeline(detector);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
@@ -175,11 +193,6 @@ public class newNav extends LinearOpMode {
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
         //variables
-
-        String[][] barcode = new String[][]{{"left", "bottom level"}, {"middle", "mid level"}, {"right", "top level"}};
-        String drive = barcode[2][0]; //may not need
-        String level = barcode[2][1];
-
         boolean intake = false;
         boolean output = false;
 
@@ -200,7 +213,7 @@ public class newNav extends LinearOpMode {
             } else if (gamepad2.right_trigger > gamepad2.left_trigger) {
                 intake = true;
                 output = false;
-            } else if (gamepad2.right_trigger > -.15 && gamepad2.left_trigger > -.15) {
+            } else if (gamepad2.right_trigger > -.2 && gamepad2.left_trigger > -.2) {
                 intake = false;
                 output = false;
                 rightIntake.setPower(0);
@@ -216,6 +229,7 @@ public class newNav extends LinearOpMode {
                 rightIntake.setPower(-outputPower);
                 leftIntake.setPower(-outputPower);
             }
+
 
             double armSpeed = .75;
             double elbowPower = Range.clip(gamepad2.left_stick_y, -1.0, 1.0) * armSpeed;
@@ -249,22 +263,84 @@ public class newNav extends LinearOpMode {
                 redCarousel = true;
                 blueWarehouse = false;
                 blueCarousel = false;
-            }
-            if (gamepad2.x) {
+            } else if (gamepad2.x) {
                 redWarehouse = false;
                 redCarousel = false;
                 blueWarehouse = true;
                 blueCarousel = false;
-            }
-            if (gamepad2.a) {
+            } else if (gamepad2.a) {
                 redWarehouse = false;
                 redCarousel = false;
                 blueWarehouse = false;
                 blueCarousel = true;
             }
+
+            if (redWarehouse) {
+                telemetry.addData("Path", "Red Warehouse");
+            } else if (redCarousel) {
+                telemetry.addData("Path", "Red Carousel");
+            } else if (blueWarehouse) {
+                telemetry.addData("Path", "Blue Warehouse");
+            }else if (blueCarousel) {
+                telemetry.addData("Path", "Blue Carousel");
+            }
+
+            if (gamepad2.dpad_right) {
+                red = true;
+                blue = false;
+
+//                int cameraMonitorViewId = hardwareMap.appContext
+//                        .getResources()
+//                        .getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+//                camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+                pipeline = new openCVTeamMarkerDetection();
+                camera.setPipeline(pipeline);
+
+//                camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+//                    @Override
+//                    public void onOpened() {
+//                        // Usually this is where you'll want to start streaming from the camera (see section 4)
+//                        camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+//                    }
+//
+//                    @Override
+//                    public void onError(int errorCode) {
+//                        /*
+//                         * This will be called if the camera could not be opened
+//                         */
+//                    }
+//                });
+            }
+            if (gamepad2.dpad_left) {
+                red = false;
+                blue = true;
+
+//                int cameraMonitorViewId = hardwareMap.appContext
+//                        .getResources()
+//                        .getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+//                camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+                pipeline = new openCVTeamMarkerDetection();
+                camera.setPipeline(pipeline);
+
+//                camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+//                    @Override
+//                    public void onOpened() {
+//                        // Usually this is where you'll want to start streaming from the camera (see section 4)
+//                        camera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+//                    }
+//
+//                    @Override
+//                    public void onError(int errorCode) {
+//                        /*
+//                         * This will be called if the camera could not be opened
+//                         */
+//                    }
+//                });
+            }
+
+            telemetry.addData("Marker Color", pipeline.getColor());
             telemetry.addData("Analysis", pipeline.getLocation());
             telemetry.update();
-//            sleep(50);
         }
 
         /*
@@ -290,29 +366,11 @@ public class newNav extends LinearOpMode {
                 topLevel = false;
                 middleLevel = true;
                 bottomLevel = false;
-
-//                runStraight(30, DRIVE_SPEED);
-//                gyroTurn(-90, TURN_SPEED);
-//                gyroHold(-90, TURN_SPEED, .25);
-//                runStraight(30, DRIVE_SPEED);
-//                gyroTurn(-180, TURN_SPEED);
-//                gyroHold(-180, TURN_SPEED, .25);
-//                runStraight(30, DRIVE_SPEED);
-//                gyroTurn(90, TURN_SPEED);
-//                gyroHold(90, TURN_SPEED, .25);
-//                runStraight(30, DRIVE_SPEED);
-//                gyroTurn(0, TURN_SPEED);
-//                gyroHold(0, TURN_SPEED, .25);
-
                 break;
             case RIGHT:
                 topLevel = true;
                 middleLevel = false;
                 bottomLevel = false;
-
-//                newnew_arcLeft(90, 35); // drive into warehouse
-//                gyroHold(-90, ARC_SPEED, .5);
-
                 break;
             case NOT_FOUND:
                 topLevel = false;
@@ -327,6 +385,166 @@ public class newNav extends LinearOpMode {
         else if (redCarousel)   { run_redCarousel()  ; }
         else if (blueWarehouse) { run_blueWarehouse(); }
         else if (blueCarousel)  { run_blueCarousel() ; }
+    }
+
+    public void run_redWarehouse(){
+        arcLeft(25, radiusToHub); // arc towards hub
+        gyroHold(-25, ARC_SPEED, .5);
+        if (topLevel){
+            moveArm(shoulderTopMidBot, elbowTop);
+            drivetowardshub = 42;
+            backawayfromhub = -12;
+        }// arm to top preset
+        else if (middleLevel){
+            moveArm(shoulderTopMidBot, elbowMid+3);
+            drivetowardshub = 40.5;
+            backawayfromhub = -10.5;
+        }// arm to middle preset
+        else if (bottomLevel){
+            moveArm(shoulderTopMidBot, elbowBot);
+            drivetowardshub = 39;
+            backawayfromhub = -9;
+        }// arm to bottom preset
+        else { moveArm(shoulderTopMidBot, elbowTop); }// default to top otherwise
+        runStraight(drivetowardshub, .3); //forward to hub
+        output();//release freight
+        runStraight(-10, DRIVE_SPEED); //slight back away from hub
+        gyroRotate(0, TURN_SPEED);
+
+        runStraight(backawayfromhub, DRIVE_SPEED); //back away from hub
+        gyroRotate(90, TURN_SPEED); //rotate left to warehouse
+        gyroHold(90, TURN_SPEED, .25);
+        moveArm(shoulderWobble, elbowWobble);//move arm down
+        og_runStraight(160, 1); //forward into warehouse
+        sleep(4000);
+
+//        arcLeft(25, radiusToHub); // arc towards hub
+//        gyroHold(-25, ARC_SPEED, .5);
+//        if (topLevel)        { moveArm(shoulderTopMidBot, elbowTop); }// arm to top preset
+//        else if (middleLevel){ moveArm(shoulderTopMidBot, elbowMid); }// arm to middle preset
+//        else if (bottomLevel){ moveArm(shoulderTopMidBot, elbowBot); }// arm to bottom preset
+//        else { moveArm(shoulderTopMidBot, elbowTop); }// default to top otherwise
+//        runStraight(40, DRIVE_SPEED); //forward to hub
+//        output();//release freight
+//        runStraight(-20, DRIVE_SPEED); //back away from hub
+//        moveArm(shoulderWobble, elbowWobble); //move arm down
+//        gyroRotate(90, TURN_SPEED); //rotate left to warehouse
+////        rotateLeft(125);
+//        gyroHold(90, TURN_SPEED, .25);
+//        og_runStraight(125, DRIVE_SPEED); //forward into warehouse
+//        moveArm(shoulderPickup, elbowPickup); //move arm to pickup position
+    }
+
+    public void run_redCarousel(){
+        arcRight(30 + startingAngle, radiusToHub); // arc towards hub
+        gyroHold(30 + startingAngle, ARC_SPEED, .25);
+        if (topLevel){
+            moveArm(shoulderTopMidBot, elbowTop);
+            drivetowardshub = 42;
+            backawayfromhub = -11;
+        }// arm to top preset
+        else if (middleLevel){
+            moveArm(shoulderTopMidBot, elbowMid+3);
+            drivetowardshub = 40.5;
+            backawayfromhub = -9.5;
+        }// arm to middle preset
+        else if (bottomLevel){
+            moveArm(shoulderTopMidBot, elbowBot);
+            drivetowardshub = 41;
+            backawayfromhub = -10;
+        }// arm to bottom preset
+        else { moveArm(shoulderTopMidBot, elbowTop); }// default to top otherwise
+        runStraight(drivetowardshub, .4); //forward to hub
+        output();//release freight
+        runStraight(-37, 1);// back away from hub
+        moveArm(shoulderZero, elbowZero);// move arm back
+        arcRight(-35 + startingAngle, radiusToHub);// arc back to 0
+        gyroHold(0 + startingAngle, ARC_SPEED, .5);
+        gyroRotate(-90 + startingAngle, TURN_SPEED);// rotate left to carousel
+        runStraight(55, DRIVE_SPEED);// drive into carousel
+        gyroHold(-90 + startingAngle, TURN_SPEED, .25);// rotate into carousel and hold contact
+        gyroRotate(-140, TURN_SPEED);
+        gyroHold(-140, TURN_SPEED, .25);
+        runStraight(4, .3);
+        red_spinCarousel();
+        runStraight(-6, .3);
+        gyroRotate(-14 + startingAngle, TURN_SPEED);
+        og_runStraight(60, 1); //forward into square
+        sleep(1500);
+    }
+
+    public void run_blueWarehouse(){
+        arcRight(35, radiusToHub); // arc towards hub
+        gyroHold(35 + startingAngle, ARC_SPEED, .5);
+        if (topLevel){
+            moveArm(shoulderTopMidBot, elbowTop);
+            drivetowardshub = 42;
+            backawayfromhub = -12;
+        }// arm to top preset
+        else if (middleLevel){
+            moveArm(shoulderTopMidBot, elbowMid+3);
+            drivetowardshub = 40.5;
+            backawayfromhub = -12;
+        }// arm to middle preset
+        else if (bottomLevel){
+            moveArm(shoulderTopMidBot, elbowBot);
+            drivetowardshub = 41;
+            backawayfromhub = -14;
+        }// arm to bottom preset
+        else { moveArm(shoulderTopMidBot, elbowTop); }// default to top otherwise
+        runStraight(drivetowardshub, .3); //forward to hub
+        output();//release freight
+        runStraight(-10, DRIVE_SPEED); //slight back away from hub
+        gyroRotate(0 + startingAngle, TURN_SPEED);
+
+        runStraight(backawayfromhub, DRIVE_SPEED); //back away from hub
+        gyroRotate(-90 + startingAngle, TURN_SPEED); //rotate left to warehouse
+        gyroHold(-90 + startingAngle, TURN_SPEED, .25);
+        moveArm(shoulderWobble, elbowWobble);//move arm down
+        og_runStraight(140, 1); //forward into warehouse
+        sleep(4000);
+//        forward 7 ins
+//        rotate to 44 heading
+//        arc to 68 on r = 26
+//        runStraight(7, DRIVE_SPEED);
+//        gyroRotate(44, TURN_SPEED);
+//        gyroHold(44, TURN_SPEED, .5);
+//        arcRight(68, 26);
+
+
+    }
+
+    public void run_blueCarousel(){
+        arcLeft(25, radiusToHub); // arc towards hub
+        gyroHold(-26, ARC_SPEED, .5);
+        if (topLevel)        {
+            moveArm(shoulderTopMidBot, elbowTop);
+            drivetowardshub = 46;
+        }// arm to top preset
+        else if (middleLevel){
+            moveArm(shoulderTopMidBot, elbowMid);
+            drivetowardshub = 43;
+        }// arm to middle preset
+        else if (bottomLevel){
+            moveArm(shoulderTopMidBot, elbowBot);
+            drivetowardshub = 40;
+        }// arm to bottom preset
+        else { moveArm(shoulderTopMidBot, elbowTop); }// default to top otherwise
+        runStraight(drivetowardshub, .4);// forward to hub
+        output();// release freight
+        arcLeft(-25, radiusToHub);// arc back to 0
+        runStraight(-24.5, DRIVE_SPEED);// back away from hub
+        moveArm(shoulderZero, elbowZero);// move arm back
+
+        gyroHold(0, ARC_SPEED, .5);
+        gyroRotate(90, TURN_SPEED);// rotate left to carousel
+        gyroHold(90, ARC_SPEED, 1);
+        runStraight(55, DRIVE_SPEED);// drive into carousel
+        blue_spinCarousel();
+//        gyroRotate(17, TURN_SPEED);
+        rotateLeft(69);
+        og_runStraight(60, DRIVE_SPEED); //forward into square
+        sleep(2000);
     }
 
     public void runMotorsPower(double leftPower, double rightPower, double speed, long durationMS) {
@@ -371,6 +589,11 @@ public class newNav extends LinearOpMode {
         DcMotorEx bRight = hardwareMap.get(DcMotorEx.class, "backRight");
         DcMotorEx fLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
         DcMotorEx fRight = hardwareMap.get(DcMotorEx.class, "frontRight");
+
+        bLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        bRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        fRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         int target = CMtoTicks(DistanceCM);
         double max;
@@ -450,11 +673,12 @@ public class newNav extends LinearOpMode {
             bLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             fLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
             telemetry.addData("Straight line:", "Done");
             telemetry.update();
         }
-    }//good
+    }// GOOD
 
     public void og_runStraight(double DistanceCM, double speed) {
         DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
@@ -464,211 +688,202 @@ public class newNav extends LinearOpMode {
 
         int target = CMtoTicks(DistanceCM);
 
-        if (opModeIsActive()){
-            bLeft.setTargetPosition(target);
-            bRight.setTargetPosition(target);
-            fLeft.setTargetPosition(target);
-            fRight.setTargetPosition(target);
+        bLeft.setTargetPosition(target);
+        bRight.setTargetPosition(target);
+        fLeft.setTargetPosition(target);
+        fRight.setTargetPosition(target);
 
-            bLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-            bRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-            fLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-            fRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        bLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        bRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        fLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        fRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
 
-            speed = Range.clip(Math.abs(speed), 0.0, 1.0);
-            bLeft.setPower(speed);
-            bRight.setPower(speed);
-            fLeft.setPower(speed);
-            fRight.setPower(speed);
+        bLeft.setPower(speed);
+        bRight.setPower(speed);
+        fLeft.setPower(speed);
+        fRight.setPower(speed);
 
-            while (opModeIsActive() && (bLeft.isBusy() || bRight.isBusy() || fLeft.isBusy() || fRight.isBusy())) {
-                telemetry.addData("Target Position", "%d", target);
-                telemetry.addData("Current Position", "bL: %d, fL: %d, bR: %d, fR: %d",
-                        bLeft.getCurrentPosition(), fLeft.getCurrentPosition(), bRight.getCurrentPosition(), fRight.getCurrentPosition());
-                telemetry.addData("Straight line:", "In Progress");
-                telemetry.update();
+        boolean done = false;
+
+        while (!done) {
+            if ((DistanceCM > 0) & (bLeft.getCurrentPosition() > target) | ((DistanceCM < 0) & (bLeft.getCurrentPosition() < target))) {
+                bLeft.setVelocity(0);
+                bRight.setVelocity(0);
+                fLeft.setVelocity(0);
+                fRight.setVelocity(0);
+
+                bLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                bRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                fLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                fRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                telemetry.addData("Straight line:", "Done");
+//                telemetry.update();
+                done = true;
             }
-
-            // Stop all motion;
-            bLeft.setPower(0);
-            fLeft.setPower(0);
-            bRight.setPower(0);
-            fRight.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            bLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            fLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            bRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            fRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            bLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            fLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-            telemetry.addData("Straight line:", "Done");
-            telemetry.update();
+            telemetry.addData("Straight line:", "In Progress");
+//            telemetry.update();
         }
     }
 
-    public void newnew_arcLeft(double Theta, double radiusCM) { //uses outer and inner radii
-        DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
-        DcMotorEx bRight    = hardwareMap.get(DcMotorEx.class,"backRight"       );
-        DcMotorEx fLeft     = hardwareMap.get(DcMotorEx.class,"frontLeft"       );
-        DcMotorEx fRight    = hardwareMap.get(DcMotorEx.class,"frontRight"      );
+//    public void newnew_arcLeft(double Theta, double radiusCM) { //uses outer and inner radii
+//        DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
+//        DcMotorEx bRight    = hardwareMap.get(DcMotorEx.class,"backRight"       );
+//        DcMotorEx fLeft     = hardwareMap.get(DcMotorEx.class,"frontLeft"       );
+//        DcMotorEx fRight    = hardwareMap.get(DcMotorEx.class,"frontRight"      );
+//
+//        double innerRadiusInches = radiusCM * .394;
+//        double innerArcLengthInches = Theta * (Math.PI/180) * innerRadiusInches;
+//        double innerArcLengthCM = innerArcLengthInches * 2.54;
+//
+//        double outerRadiusInches = (radiusCM + robotRadius) * .394;
+//        double outerArcLengthInches = Theta * (Math.PI/180) * outerRadiusInches;
+//        double outerArcLengthCM = outerArcLengthInches * 2.54;
+//
+//        int innerTarget = CMtoTicks(innerArcLengthCM);
+//        int outerTarget = CMtoTicks(outerArcLengthCM);
+//
+//        double max;
+//        double error;
+//        double steer;
+//        double leftSpeed;
+//        double rightSpeed;
+//
+//        if (opModeIsActive()) {
+//            bLeft.setTargetPosition(innerTarget);
+//            fLeft.setTargetPosition(innerTarget);
+//            bRight.setTargetPosition(outerTarget);
+//            fRight.setTargetPosition(outerTarget);
+//
+//            bLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+//            bRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+//            fLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+//            fRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+//
+//            // start motion.
+//            double speed = Range.clip(Math.abs(TURN_SPEED), 0.0, 1.0);
+//            bLeft.setPower(speed);
+//            bRight.setPower(speed);
+//            fLeft.setPower(speed);
+//            fRight.setPower(speed);
+//
+//            while (opModeIsActive() &&
+//                    (bLeft.isBusy() && bRight.isBusy() && fLeft.isBusy() && fRight.isBusy())) {
+//
+//                // adjust relative speed based on heading error.
+//                error = getError(Theta);
+//                steer = getSteer(error, P_DRIVE_COEFF);
+//
+//                // if driving in reverse, the motor correction also needs to be reversed
+//                if (Theta < 0)
+//                    steer *= -1.0;
+//
+//                leftSpeed = speed - steer;
+//                rightSpeed = speed + steer;
+//
+//                // Normalize speeds if either one exceeds +/- 1.0;
+//                max = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
+//                if (max > 1.0) {
+//                    leftSpeed /= max;
+//                    rightSpeed /= max;
+//                }
+//
+//                bLeft.setPower(leftSpeed);
+//                fLeft.setPower(leftSpeed);
+//                bRight.setPower(rightSpeed);
+//                fRight.setPower(rightSpeed);
+//
+//                // Display drive status for the driver.
+//                telemetry.addData("Error/Steer", "%5.1f/%5.1f", error, steer);
+//                telemetry.addData("Target Position", "Outer(Left): %d, Inner(Right): %d", outerTarget, innerTarget);
+//                telemetry.addData("Current Outer Position", "bL: %d, fL: %d",
+//                        bLeft.getCurrentPosition(), fLeft.getCurrentPosition());
+//                telemetry.addData("Current Inner Position", "bR: %d, fR: %d",
+//                        bRight.getCurrentPosition(), fRight.getCurrentPosition());
+//                telemetry.addData("Speed", "Left: %5.2f, Right: %5.2f", leftSpeed, rightSpeed);
+//                telemetry.addData("Arc:", "In Progress");
+//                telemetry.update();
+//            }
+//            // Stop all motion;
+//            bLeft.setPower(0);
+//            fLeft.setPower(0);
+//            bRight.setPower(0);
+//            fRight.setPower(0);
+//
+//            // Turn off RUN_TO_POSITION
+//            bLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//            fLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//            bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//            fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//
+//            telemetry.addData("Arc:", "Done :)");
+//            telemetry.update();
+//        }
+//    } //Fail
 
-        double innerRadiusInches = radiusCM * .394;
-        double innerArcLengthInches = Theta * (Math.PI/180) * innerRadiusInches;
-        double innerArcLengthCM = innerArcLengthInches * 2.54;
-
-        double outerRadiusInches = (radiusCM + robotRadius) * .394;
-        double outerArcLengthInches = Theta * (Math.PI/180) * outerRadiusInches;
-        double outerArcLengthCM = outerArcLengthInches * 2.54;
-
-        int innerTarget = CMtoTicks(innerArcLengthCM);
-        int outerTarget = CMtoTicks(outerArcLengthCM);
-
-        double max;
-        double error;
-        double steer;
-        double leftSpeed;
-        double rightSpeed;
-
-        if (opModeIsActive()) {
-            bLeft.setTargetPosition(innerTarget);
-            fLeft.setTargetPosition(innerTarget);
-            bRight.setTargetPosition(outerTarget);
-            fRight.setTargetPosition(outerTarget);
-
-            bLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-            bRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-            fLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-            fRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-
-            // start motion.
-            double speed = Range.clip(Math.abs(TURN_SPEED), 0.0, 1.0);
-            bLeft.setPower(speed);
-            bRight.setPower(speed);
-            fLeft.setPower(speed);
-            fRight.setPower(speed);
-
-            while (opModeIsActive() &&
-                    (bLeft.isBusy() && bRight.isBusy() && fLeft.isBusy() && fRight.isBusy())) {
-
-                // adjust relative speed based on heading error.
-                error = getError(Theta);
-                steer = getSteer(error, P_DRIVE_COEFF);
-
-                // if driving in reverse, the motor correction also needs to be reversed
-                if (Theta < 0)
-                    steer *= -1.0;
-
-                leftSpeed = speed - steer;
-                rightSpeed = speed + steer;
-
-                // Normalize speeds if either one exceeds +/- 1.0;
-                max = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
-                if (max > 1.0) {
-                    leftSpeed /= max;
-                    rightSpeed /= max;
-                }
-
-                bLeft.setPower(leftSpeed);
-                fLeft.setPower(leftSpeed);
-                bRight.setPower(rightSpeed);
-                fRight.setPower(rightSpeed);
-
-                // Display drive status for the driver.
-                telemetry.addData("Error/Steer", "%5.1f/%5.1f", error, steer);
-                telemetry.addData("Target Position", "Outer(Left): %d, Inner(Right): %d", outerTarget, innerTarget);
-                telemetry.addData("Current Outer Position", "bL: %d, fL: %d",
-                        bLeft.getCurrentPosition(), fLeft.getCurrentPosition());
-                telemetry.addData("Current Inner Position", "bR: %d, fR: %d",
-                        bRight.getCurrentPosition(), fRight.getCurrentPosition());
-                telemetry.addData("Speed", "Left: %5.2f, Right: %5.2f", leftSpeed, rightSpeed);
-                telemetry.addData("Arc:", "In Progress");
-                telemetry.update();
-            }
-            // Stop all motion;
-            bLeft.setPower(0);
-            fLeft.setPower(0);
-            bRight.setPower(0);
-            fRight.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            bLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            fLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-            telemetry.addData("Arc:", "Done :)");
-            telemetry.update();
-        }
-    } //inner & outer radii w/ speed controls > needs testing
-
-    public void new_arcRight(double Theta, double radiusCM) {//uses out and inner radii
-        DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
-        DcMotorEx bRight    = hardwareMap.get(DcMotorEx.class,"backRight"       );
-        DcMotorEx fLeft     = hardwareMap.get(DcMotorEx.class,"frontLeft"       );
-        DcMotorEx fRight    = hardwareMap.get(DcMotorEx.class,"frontRight"      );
-
-        double robotRadius = 40.5;
-
-        double innerRadiusInches = radiusCM * .394;
-        double innerArcLengthInches = Theta * (Math.PI/180) * innerRadiusInches;
-        double innerArcLengthCM = innerArcLengthInches * 2.54;
-
-        double outerRadiusInches = (radiusCM + robotRadius) * .394;
-        double outerArcLengthInches = Theta * (Math.PI/180) * outerRadiusInches;
-        double outerArcLengthCM = outerArcLengthInches * 2.54;
-
-        int innerTarget = CMtoTicks(innerArcLengthCM);
-        int outerTarget = CMtoTicks(outerArcLengthCM);
-
-        if (opModeIsActive()) {
-            bLeft.setTargetPosition(outerTarget);
-            fLeft.setTargetPosition(outerTarget);
-            bRight.setTargetPosition(innerTarget);
-            fRight.setTargetPosition(innerTarget);
-
-            bLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-            bRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-            fLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-            fRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-
-            // start motion.
-            double speed = Range.clip(Math.abs(TURN_SPEED), 0.0, 1.0);
-            bLeft.setPower(speed);
-            bRight.setPower(speed);
-            fLeft.setPower(speed);
-            fRight.setPower(speed);
-
-            while (opModeIsActive() &&
-                    (bLeft.isBusy() && bRight.isBusy() && fLeft.isBusy() && fRight.isBusy())) {
-                telemetry.addData("Target Position", "Outer(Left): %d, Inner(Right): %d", outerTarget, innerTarget);
-                telemetry.addData("Current Outer Position", "bL: %d, fL: %d",
-                        bLeft.getCurrentPosition(), fLeft.getCurrentPosition());
-                telemetry.addData("Current Inner Position", "bR: %d, fR: %d",
-                        bRight.getCurrentPosition(), fRight.getCurrentPosition());
-                telemetry.addData("Arc:", "In Progress");
-                telemetry.update();
-            }
-            // Stop all motion;
-            bLeft.setPower(0);
-            fLeft.setPower(0);
-            bRight.setPower(0);
-            fRight.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            bLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            fLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-            telemetry.addData("Arc:", "Done :)");
-            telemetry.update();
-        }
-    } //inner & outer radii w/o speed controls > fail
+//    public void new_arcRight(double Theta, double radiusCM) {//uses out and inner radii
+//        DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
+//        DcMotorEx bRight    = hardwareMap.get(DcMotorEx.class,"backRight"       );
+//        DcMotorEx fLeft     = hardwareMap.get(DcMotorEx.class,"frontLeft"       );
+//        DcMotorEx fRight    = hardwareMap.get(DcMotorEx.class,"frontRight"      );
+//
+//        double robotRadius = 40.5;
+//
+//        double innerRadiusInches = radiusCM * .394;
+//        double innerArcLengthInches = Theta * (Math.PI/180) * innerRadiusInches;
+//        double innerArcLengthCM = innerArcLengthInches * 2.54;
+//
+//        double outerRadiusInches = (radiusCM + robotRadius) * .394;
+//        double outerArcLengthInches = Theta * (Math.PI/180) * outerRadiusInches;
+//        double outerArcLengthCM = outerArcLengthInches * 2.54;
+//
+//        int innerTarget = CMtoTicks(innerArcLengthCM);
+//        int outerTarget = CMtoTicks(outerArcLengthCM);
+//
+//        if (opModeIsActive()) {
+//            bLeft.setTargetPosition(outerTarget);
+//            fLeft.setTargetPosition(outerTarget);
+//            bRight.setTargetPosition(innerTarget);
+//            fRight.setTargetPosition(innerTarget);
+//
+//            bLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+//            bRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+//            fLeft.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+//            fRight.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+//
+//            // start motion.
+//            double speed = Range.clip(Math.abs(TURN_SPEED), 0.0, 1.0);
+//            bLeft.setPower(speed);
+//            bRight.setPower(speed);
+//            fLeft.setPower(speed);
+//            fRight.setPower(speed);
+//
+//            while (opModeIsActive() &&
+//                    (bLeft.isBusy() && bRight.isBusy() && fLeft.isBusy() && fRight.isBusy())) {
+//                telemetry.addData("Target Position", "Outer(Left): %d, Inner(Right): %d", outerTarget, innerTarget);
+//                telemetry.addData("Current Outer Position", "bL: %d, fL: %d",
+//                        bLeft.getCurrentPosition(), fLeft.getCurrentPosition());
+//                telemetry.addData("Current Inner Position", "bR: %d, fR: %d",
+//                        bRight.getCurrentPosition(), fRight.getCurrentPosition());
+//                telemetry.addData("Arc:", "In Progress");
+//                telemetry.update();
+//            }
+//            // Stop all motion;
+//            bLeft.setPower(0);
+//            fLeft.setPower(0);
+//            bRight.setPower(0);
+//            fRight.setPower(0);
+//
+//            // Turn off RUN_TO_POSITION
+//            bLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//            fLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//            bRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//            fRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+//
+//            telemetry.addData("Arc:", "Done :)");
+//            telemetry.update();
+//        }
+//    } //Fail
 
     public void arcLeft(double Theta, double radiusCM) { //only runs right motors (arc degree of bRight only (for now), radius of circle arc 0f bRight only (for now))
         DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
@@ -721,7 +936,7 @@ public class newNav extends LinearOpMode {
             telemetry.addData("Arc:", "Done :)");
             telemetry.update();
         }
-    } //outer radii only
+    } // outer radii only > GOOD (w/ hold)
 
     public void arcRight(double Theta, double radiusCM) { //only runs left motors (arc degree of bLeft only (for now), radius of circle arc 0f bLeft only (for now))
         DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
@@ -774,7 +989,7 @@ public class newNav extends LinearOpMode {
             telemetry.addData("Arc:", "Done :)");
             telemetry.update();
         }
-    } //outer radii only
+    } // outer radii only > GOOD (w/ hold)
 
     public void rotateLeft(double Theta) {
         DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
@@ -826,7 +1041,7 @@ public class newNav extends LinearOpMode {
             telemetry.addData("Arc:", "In Progress");
 //            telemetry.update();
         }
-    } // NEED TO ADD OPMODE CONDITIONALS > see gyro turn
+    }// NEED TO ADD OPMODE CONDITIONALS > see gyro turn
 
     public void rotateRight(double Theta) {
         DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
@@ -878,19 +1093,19 @@ public class newNav extends LinearOpMode {
             telemetry.addData("Arc:", "In Progress");
 //            telemetry.update();
         }
-    } // ^
+    }// ^
 
     public int CMtoTicks(double DistanceCM){
         return (int) (DistanceCM * 23.6);
-    }
+    }// calculation
 
-    public void gyroTurn (double angle, double speed) {
+    public void gyroRotate (double angle, double speed) {
         // keep looping while we are still active, and not on heading.
         while (opModeIsActive() && !onHeading(speed, -angle, P_TURN_COEFF)) {
             // Update telemetry & Allow time for other processes to run.
             telemetry.update();
         }
-    } // (rotate) should be good to go
+    } // (rotate) GOOD
 
     public void gyroHold(double angle, double speed, double holdTime) {
         DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
@@ -904,7 +1119,7 @@ public class newNav extends LinearOpMode {
         holdTimer.reset();
         while (opModeIsActive() && (holdTimer.time() < holdTime)) {
             // Update telemetry & Allow time for other processes to run.
-            onHeading(speed, angle, P_TURN_COEFF);
+            onHeading(speed, -angle, P_TURN_COEFF);
             telemetry.update();
         }
 
@@ -913,8 +1128,8 @@ public class newNav extends LinearOpMode {
         fLeft.setPower(0);
         bRight.setPower(0);
         fRight.setPower(0);
-    }//basically a second check to make sure the
-                                                                            //robot is at the correct heading > should// be good to go
+    }// (GOOD) basically a second check to make sure the
+                                                                           // robot is at the correct heading > should be good to go
     public double getError(double targetAngle) {
 
         double robotError;
@@ -924,11 +1139,11 @@ public class newNav extends LinearOpMode {
         while (robotError > 180)  robotError -= 360;
         while (robotError <= -180) robotError += 360;
         return robotError;
-    }
+    }// calculation
 
     public double getSteer(double error, double PCoeff) {
         return Range.clip(error * PCoeff, -1, 1);
-    }
+    }// calculation
 
     boolean onHeading(double speed, double angle, double PCoeff) {
         DcMotorEx bLeft     = hardwareMap.get(DcMotorEx.class,"backLeft"        );
@@ -969,7 +1184,7 @@ public class newNav extends LinearOpMode {
         telemetry.addData("Speed", "Left: %5.2f, Right: %5.2f", leftSpeed, rightSpeed);
 
         return onTarget;
-    }
+    }//basically PID controls based on heading
 
     public void moveArm(int shoulderPosition, int elbowPosition) {
         DcMotorEx elbow     = hardwareMap.get(DcMotorEx.class,"elbowArmMotor"   );
@@ -977,8 +1192,21 @@ public class newNav extends LinearOpMode {
 
         double shoulderPower;
         double elbowPower;
+        double duration = 0;
 
-        if ((shoulder.getCurrentPosition() == shoulderLow && elbow.getCurrentPosition() == elbowLow)
+        ElapsedTime holdTimer = new ElapsedTime();
+
+        if (elbowPosition == elbowTop) {
+            duration = 5;
+        } else if (elbowPosition == elbowMid) {
+            duration = 3.2;
+        } else if (elbowPosition == elbowBot) {
+            duration = 3.29;
+        } else{
+            duration = 2;
+        }
+
+        if ((shoulder.getCurrentPosition() == shoulderWobble && elbow.getCurrentPosition() == elbowWobble)
             && (shoulderPosition == shoulderPickup && elbowPosition == elbowPickup)) {
             shoulderPower = .4;
             elbowPower = .35;
@@ -988,35 +1216,46 @@ public class newNav extends LinearOpMode {
         }
 
         if (opModeIsActive()) {
+
             shoulder.setTargetPosition(shoulderPosition);
             elbow.setTargetPosition(elbowPosition);
 
             shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+            holdTimer.reset();
             shoulder.setPower(shoulderPower);
             elbow.setPower(elbowPower);
 
-            while (opModeIsActive() && (elbow.isBusy() || shoulder.isBusy())) {
-                // Display drive status for the driver.
-                telemetry.addData("Arm Position Change:", "In Progress");
+            while (opModeIsActive() && (holdTimer.time() < duration)) {
+                // Update telemetry & Allow time for other processes to run.
+                telemetry.addData("Arm Move Duration", holdTimer.seconds());
                 telemetry.update();
             }
+//            while ((elbow.isBusy() || shoulder.isBusy())) {
+//                telemetry.addData("Duration", holdTimer.seconds());
+//                telemetry.update();
+//            }
+
             telemetry.addData("Arm Position Change:", "Done :)");
+            telemetry.addData("Arm Move Duration", holdTimer.seconds());
             telemetry.update();
         }
-
-    }
+    }//move arm
 
     public void intake(){
         rightIntake = hardwareMap.get(CRServo.class, "RightServo");
         leftIntake = hardwareMap.get(CRServo.class, "LeftServo");
 
-        leftIntake.setPower(1);
-        rightIntake.setPower(1);
+        ElapsedTime holdTimer = new ElapsedTime();
 
-//        sleep(???);
-
+        // keep looping while we have time remaining.
+        holdTimer.reset();
+        while (opModeIsActive() && (holdTimer.time() < intakeTimer)) {
+            leftIntake.setPower(1);
+            rightIntake.setPower(1);
+        }
+        // Stop all motion;
         leftIntake.setPower(0);
         rightIntake.setPower(0);
     }
@@ -1025,10 +1264,83 @@ public class newNav extends LinearOpMode {
         rightIntake = hardwareMap.get(CRServo.class, "RightServo");
         leftIntake = hardwareMap.get(CRServo.class, "LeftServo");
 
-//        sleep(???);
+       ElapsedTime holdTimer = new ElapsedTime();
 
+        // keep looping while we have time remaining.
+        holdTimer.reset();
+        while (opModeIsActive() && (holdTimer.time() < outputTimer)) {
+            leftIntake.setPower(-1);
+            rightIntake.setPower(-1);
+        }
+        // Stop all motion;
         leftIntake.setPower(0);
         rightIntake.setPower(0);
+    }
+
+    public void blue_spinCarousel(){
+        DcMotorEx bLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
+        DcMotorEx bRight = hardwareMap.get(DcMotorEx.class, "backRight");
+        DcMotorEx fLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
+        DcMotorEx fRight = hardwareMap.get(DcMotorEx.class, "frontRight");
+        ttMotor = hardwareMap.get(DcMotorEx.class, "turnTableMotor");
+
+        fLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        bLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        bRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        ElapsedTime holdTimer = new ElapsedTime();
+
+        // keep looping while we have time remaining.
+        holdTimer.reset();
+        while (opModeIsActive() && (holdTimer.time() < carouselTimer)) {
+            ttMotor.setPower(1);
+
+            fLeft.setPower(.12); //maintain contact on carousel
+            fRight.setPower(.12);
+            bLeft.setPower(.08);
+            bRight.setPower(.08);
+        }
+
+        ttMotor.setPower(0);// Stop all motion
+
+        bLeft.setPower(0);
+        fLeft.setPower(0);
+        bRight.setPower(0);
+        fRight.setPower(0);
+    }
+
+    public void red_spinCarousel(){
+        DcMotorEx bLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
+        DcMotorEx bRight = hardwareMap.get(DcMotorEx.class, "backRight");
+        DcMotorEx fLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
+        DcMotorEx fRight = hardwareMap.get(DcMotorEx.class, "frontRight");
+        ttMotor = hardwareMap.get(DcMotorEx.class, "turnTableMotor");
+
+        fLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        bLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        bRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        ElapsedTime holdTimer = new ElapsedTime();
+
+        // keep looping while we have time remaining.
+        holdTimer.reset();
+        while (opModeIsActive() && (holdTimer.time() < carouselTimer)) {
+            ttMotor.setPower(-1);
+
+            bLeft.setPower(0);//maintain contact on carousel
+            fLeft.setPower(0);
+            bRight.setPower(.1);
+            fRight.setPower(1.2);
+        }
+
+        ttMotor.setPower(0);// Stop all motion
+
+        bLeft.setPower(0);
+        fLeft.setPower(0);
+        bRight.setPower(0);
+        fRight.setPower(0);
     }
 
     public void brake(long durationMS) {
@@ -1044,47 +1356,13 @@ public class newNav extends LinearOpMode {
         sleep(durationMS);
     }
 
-    public void run_redWarehouse(){
-
+    public boolean IsMarkerRed() {
+        return red;
+    }
+    public boolean IsMarkerBlue() {
+        return blue;
     }
 
-    public void run_redCarousel(){
-
-    }
-
-    public void run_blueWarehouse(){
-        new_arcRight(35, radiusHubtoRightSide); // arc towards hub
-        gyroHold(35, ARC_SPEED, .5);
-//        arcRight(35, 84.405 - robotRadius); //needs opmode conditionals
-//        gyroHold(35, ARC_SPEED, .5);
-        if (topLevel){
-            //arm to top preset
-            moveArm(shoulderTopMid, elbowTop);
-        }
-        else if (middleLevel){
-            //arm to middle preset
-            moveArm(shoulderTopMid, elbowMid);
-        }
-        else if (bottomLevel){
-            moveArm(shoulderBot, elbowBot); //NEED A BOT POSITION //arm to bottom preset
-        } //NEED A BOT POSITION
-        else {
-            moveArm(shoulderTopMid, elbowTop);
-        }
-        runStraight(40, DRIVE_SPEED); //forward to hub
-        output();//need allotted time necessary for output //release cargo
-        runStraight(-40, DRIVE_SPEED); //back away from hub
-        moveArm(shoulderLow, elbowLow); //move arm down
-        gyroTurn(-90, TURN_SPEED); //rotate left to warehouse
-//        rotateLeft(125);
-        gyroHold(TURN_SPEED, -90, .25);
-        og_runStraight(125, DRIVE_SPEED); //forward into warehouse
-        moveArm(shoulderPickup, elbowPickup); //move arm to pickup position
-    }
-
-    public void run_blueCarousel(){
-
-    }
 
     void composeTelemetry() {
         // At the beginning of each telemetry update, grab a bunch of data
@@ -1152,3 +1430,4 @@ public class newNav extends LinearOpMode {
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
     }
 }
+

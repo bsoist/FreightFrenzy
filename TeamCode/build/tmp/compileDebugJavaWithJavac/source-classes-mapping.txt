@@ -1,7 +1,15 @@
 org/firstinspires/ftc/teamcode/test/calibration.java
  org.firstinspires.ftc.teamcode.test.calibration
-org/firstinspires/ftc/teamcode/teleop/HalfPresetDrive.java
- org.firstinspires.ftc.teamcode.teleop.HalfPresetDrive
+org/firstinspires/ftc/teamcode/disabled/PushbotAutoDriveByGyro_Linear.java
+ org.firstinspires.ftc.teamcode.disabled.PushbotAutoDriveByGyro_Linear
+ org.firstinspires.ftc.teamcode.disabled.PushbotAutoDriveByGyro_Linear$1
+ org.firstinspires.ftc.teamcode.disabled.PushbotAutoDriveByGyro_Linear$2
+ org.firstinspires.ftc.teamcode.disabled.PushbotAutoDriveByGyro_Linear$3
+ org.firstinspires.ftc.teamcode.disabled.PushbotAutoDriveByGyro_Linear$4
+ org.firstinspires.ftc.teamcode.disabled.PushbotAutoDriveByGyro_Linear$5
+ org.firstinspires.ftc.teamcode.disabled.PushbotAutoDriveByGyro_Linear$6
+ org.firstinspires.ftc.teamcode.disabled.PushbotAutoDriveByGyro_Linear$7
+ org.firstinspires.ftc.teamcode.disabled.PushbotAutoDriveByGyro_Linear$8
 org/firstinspires/ftc/teamcode/test/IMUTest.java
  org.firstinspires.ftc.teamcode.test.IMUTest
  org.firstinspires.ftc.teamcode.test.IMUTest$1
@@ -14,45 +22,36 @@ org/firstinspires/ftc/teamcode/test/IMUTest.java
  org.firstinspires.ftc.teamcode.test.IMUTest$8
 org/firstinspires/ftc/teamcode/test/TensorFlowObjectDetectionWebcam.java
  org.firstinspires.ftc.teamcode.test.TensorFlowObjectDetectionWebcam
-org/firstinspires/ftc/teamcode/test/PushbotAutoDriveByGyro_Linear.java
- org.firstinspires.ftc.teamcode.test.PushbotAutoDriveByGyro_Linear
- org.firstinspires.ftc.teamcode.test.PushbotAutoDriveByGyro_Linear$1
- org.firstinspires.ftc.teamcode.test.PushbotAutoDriveByGyro_Linear$2
- org.firstinspires.ftc.teamcode.test.PushbotAutoDriveByGyro_Linear$3
- org.firstinspires.ftc.teamcode.test.PushbotAutoDriveByGyro_Linear$4
- org.firstinspires.ftc.teamcode.test.PushbotAutoDriveByGyro_Linear$5
- org.firstinspires.ftc.teamcode.test.PushbotAutoDriveByGyro_Linear$6
- org.firstinspires.ftc.teamcode.test.PushbotAutoDriveByGyro_Linear$7
- org.firstinspires.ftc.teamcode.test.PushbotAutoDriveByGyro_Linear$8
+org/firstinspires/ftc/teamcode/disabled/RedCarousel.java
+ org.firstinspires.ftc.teamcode.disabled.RedCarousel
+org/firstinspires/ftc/teamcode/disabled/ArmPresetDrive.java
+ org.firstinspires.ftc.teamcode.disabled.ArmPresetDrive
+org/firstinspires/ftc/teamcode/disabled/SensorMagLimit.java
+ org.firstinspires.ftc.teamcode.disabled.SensorMagLimit
 org/firstinspires/ftc/teamcode/test/openCVtest.java
  org.firstinspires.ftc.teamcode.test.openCVtest
  org.firstinspires.ftc.teamcode.test.openCVtest$1
  org.firstinspires.ftc.teamcode.test.openCVtest$2
-org/firstinspires/ftc/teamcode/teleop/ArmPresetDrive.java
- org.firstinspires.ftc.teamcode.teleop.ArmPresetDrive
-org/firstinspires/ftc/teamcode/auto/RedCarousel.java
- org.firstinspires.ftc.teamcode.auto.RedCarousel
+org/firstinspires/ftc/teamcode/disabled/BlueCarousel.java
+ org.firstinspires.ftc.teamcode.disabled.BlueCarousel
 org/firstinspires/ftc/teamcode/teleop/NewIntake.java
  org.firstinspires.ftc.teamcode.teleop.NewIntake
-org/firstinspires/ftc/teamcode/test/newNav.java
- org.firstinspires.ftc.teamcode.test.newNav
- org.firstinspires.ftc.teamcode.test.newNav$1
- org.firstinspires.ftc.teamcode.test.newNav$2
- org.firstinspires.ftc.teamcode.test.newNav$3
- org.firstinspires.ftc.teamcode.test.newNav$4
- org.firstinspires.ftc.teamcode.test.newNav$5
- org.firstinspires.ftc.teamcode.test.newNav$6
-org/firstinspires/ftc/teamcode/auto/RedWarehouse.java
- org.firstinspires.ftc.teamcode.auto.RedWarehouse
-org/firstinspires/ftc/teamcode/teleop/EventDrive.java
- org.firstinspires.ftc.teamcode.teleop.EventDrive
-org/firstinspires/ftc/teamcode/test/SensorMagLimit.java
- org.firstinspires.ftc.teamcode.test.SensorMagLimit
+org/firstinspires/ftc/teamcode/disabled/HalfPresetDrive.java
+ org.firstinspires.ftc.teamcode.disabled.HalfPresetDrive
+org/firstinspires/ftc/teamcode/auto/newNav.java
+ org.firstinspires.ftc.teamcode.auto.newNav
+ org.firstinspires.ftc.teamcode.auto.newNav$1
+ org.firstinspires.ftc.teamcode.auto.newNav$2
+ org.firstinspires.ftc.teamcode.auto.newNav$3
+ org.firstinspires.ftc.teamcode.auto.newNav$4
+ org.firstinspires.ftc.teamcode.auto.newNav$5
+ org.firstinspires.ftc.teamcode.auto.newNav$6
+org/firstinspires/ftc/teamcode/disabled/RedWarehouse.java
+ org.firstinspires.ftc.teamcode.disabled.RedWarehouse
 org/firstinspires/ftc/teamcode/test/openCVTeamMarkerDetection.java
  org.firstinspires.ftc.teamcode.test.openCVTeamMarkerDetection
  org.firstinspires.ftc.teamcode.test.openCVTeamMarkerDetection$Location
-org/firstinspires/ftc/teamcode/auto/BlueCarousel.java
- org.firstinspires.ftc.teamcode.auto.BlueCarousel
+ org.firstinspires.ftc.teamcode.test.openCVTeamMarkerDetection$Marker
 org/firstinspires/ftc/teamcode/BuildConfig.java
  org.firstinspires.ftc.teamcode.BuildConfig
 org/firstinspires/ftc/teamcode/test/IMUCalibration.java
@@ -63,5 +62,7 @@ org/firstinspires/ftc/teamcode/test/IMUCalibration.java
  org.firstinspires.ftc.teamcode.test.IMUCalibration$4
  org.firstinspires.ftc.teamcode.test.IMUCalibration$5
  org.firstinspires.ftc.teamcode.test.IMUCalibration$6
-org/firstinspires/ftc/teamcode/auto/BlueWarehouse.java
- org.firstinspires.ftc.teamcode.auto.BlueWarehouse
+org/firstinspires/ftc/teamcode/disabled/BlueWarehouse.java
+ org.firstinspires.ftc.teamcode.disabled.BlueWarehouse
+org/firstinspires/ftc/teamcode/disabled/EventDrive.java
+ org.firstinspires.ftc.teamcode.disabled.EventDrive

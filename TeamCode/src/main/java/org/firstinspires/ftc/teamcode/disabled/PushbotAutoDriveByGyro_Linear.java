@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.test;
+package org.firstinspires.ftc.teamcode.disabled;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
@@ -97,7 +97,7 @@ import java.util.Locale;
  */
 
 @Autonomous(name="Pushbot: Auto Drive By Gyro", group="")
-//@Disabled
+@Disabled
 public class PushbotAutoDriveByGyro_Linear extends LinearOpMode {
 
     // Declare OpMode members.

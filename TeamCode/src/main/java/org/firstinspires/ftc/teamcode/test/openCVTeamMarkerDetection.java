@@ -1,14 +1,19 @@
 package org.firstinspires.ftc.teamcode.test;
 
-import android.app.Notification;
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.auto.newNav;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-public class openCVTeamMarkerDetection extends OpenCvPipeline {
-    Telemetry telemetry;
+public  class openCVTeamMarkerDetection extends OpenCvPipeline {
+//    Telemetry telemetry;
     Mat mat = new Mat();
+
+    public enum Marker {
+        RED,
+        BLUE
+    }
+
 
     public enum Location {
         RIGHT,
@@ -16,18 +21,20 @@ public class openCVTeamMarkerDetection extends OpenCvPipeline {
         LEFT,
         NOT_FOUND
     }
-    private Location location;
+
+    private volatile Location location = Location.RIGHT;
+    public volatile Marker color = Marker.BLUE;
 
     static final Rect MIDDLE_ROI = new Rect(
-            new Point(10, 60),
-            new Point(160, 200));
+            new Point(10, 130),
+            new Point(160, 215));
     static final Rect RIGHT_ROI = new Rect(
-            new Point(170, 60),
-            new Point(315, 200));
+            new Point(170, 130),
+            new Point(315, 215));
 
-    static double PERCENT_COLOR_THRESHOLD = .15;
+    static double PERCENT_COLOR_THRESHOLD = .11;
 
-    public openCVTeamMarkerDetection (Telemetry t) { telemetry = t; }
+//    public openCVTeamMarkerDetection (Telemetry t) { telemetry = t; }
 
     @Override
     public Mat processFrame(Mat input) {
@@ -70,11 +77,11 @@ public class openCVTeamMarkerDetection extends OpenCvPipeline {
 
         //14296 red target > 0, 98%, 67%
         double red_lowHue = 0;
-        double red_lowSat = .6;
+        double red_lowSat = .5;
         double red_lowVal = 0;
-        double red_highHue = 6;
+        double red_highHue = 15;
         double red_highSat = 1;
-        double red_highVal = 1;
+        double red_highVal = .6;
 
         double hueConv = .5; //(out of 180)
         double satConv = 255; //(out of 255)
@@ -101,8 +108,17 @@ public class openCVTeamMarkerDetection extends OpenCvPipeline {
         Scalar red_lowHSV = new Scalar(red_lowHue, red_lowSat, red_lowVal);
         Scalar red_highHSV = new Scalar(red_highHue, red_highSat, red_highVal);
 
-//        Core.inRange(mat, blue_lowHSV, blue_highHSV, mat);
-        Core.inRange(mat, red_lowHSV, red_highHSV, mat);
+        newNav markerColor = new newNav();
+       if (markerColor.IsMarkerRed()) {
+           color = Marker.RED;
+           Core.inRange(mat, red_lowHSV, red_highHSV, mat);
+       } else if (markerColor.IsMarkerBlue()) {
+           color = Marker.BLUE;
+           Core.inRange(mat, blue_lowHSV, blue_highHSV, mat);
+       } else {
+//           Core.inRange(mat, blue_lowHSV, blue_highHSV, mat);
+       }
+
 
         Mat middle = mat.submat(MIDDLE_ROI);
         Mat right = mat.submat(RIGHT_ROI);
@@ -150,8 +166,10 @@ public class openCVTeamMarkerDetection extends OpenCvPipeline {
 
         return mat;
     }
-
     public Location getLocation() {
         return location;
+    }
+    public Marker getColor() {
+        return color;
     }
 }

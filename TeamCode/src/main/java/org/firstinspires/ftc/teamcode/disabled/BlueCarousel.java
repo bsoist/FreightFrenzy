@@ -26,7 +26,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.disabled;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -38,6 +38,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import java.util.List;
 
@@ -51,9 +52,9 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@Autonomous(name = "Red Warehouse", group = "--", preselectTeleOp = "HalfPresetDrive")
-//@Disabled
-public class RedWarehouse extends LinearOpMode {
+@Autonomous(name = "Blue Carousel", group = "-", preselectTeleOp = "HalfPresetDrive")
+ @Disabled
+public class BlueCarousel extends LinearOpMode {
   /* Note: This sample uses the all-objects Tensor Flow model (FreightFrenzy_BCDM.tflite), which contains
    * the following 4 detectable objects
    *  0: Ball,
@@ -160,8 +161,6 @@ public class RedWarehouse extends LinearOpMode {
 
         int Sdelta = 1504;
         int Edelta = 394;
-        double robotOuterRadius = 40.5;
-        double radiusHubtoRightSide = 32.5;
 
         /**
          * Activate TensorFlow Object Detection before we wait for the start command.
@@ -281,7 +280,7 @@ public class RedWarehouse extends LinearOpMode {
                 }
                 else if (topLevel){
                     //set arm to top preset
-                    elbow.setTargetPosition(-160 + Edelta);
+                    elbow.setTargetPosition(-165 + Edelta);
                     shoulder.setTargetPosition(0 - Sdelta);
 
                     elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -328,7 +327,7 @@ public class RedWarehouse extends LinearOpMode {
                     runStraight(38); //approach hub
                 }
                 else {
-                    runStraight(40); // approach hub
+                    runStraight(42); // approach hub
                 }
 
                 telemetry.addData("Cargo Release:", "Starting");
@@ -365,13 +364,15 @@ public class RedWarehouse extends LinearOpMode {
                 shoulder.setVelocity(0);
                 shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                // back slightly from hub
-                if (bottomLevel){
-                    runStraight(-10);
-                }else if (middleLevel) {
-                    runStraight(-11); // net (delta)x = 38
-                }else {
-                    runStraight(-13); // net (delta)x = 27
+                // back away from hub
+                if (bottomLevel) {
+                    runStraight(-19 + 7);
+                }
+                else if(middleLevel){
+                    runStraight(-38 + 7);
+                }
+                else {
+                    runStraight(-42 + 7);
                 }
 
                 if (topLevel){
@@ -405,19 +406,35 @@ public class RedWarehouse extends LinearOpMode {
 
                 arcLeft(-25, 84.405);
 
-                sleep(500);
-
-                if(bottomLevel){
-                    runStraight(30);// net (delta)x from arc = 27
-
-                    sleep(700);
+                if (bottomLevel){
+                    rotateRight(85);
+                }
+                else{
+                    rotateRight(88); //rotate toward warehouse
                 }
 
-                rotateRight(90); //rotate toward warehouse
+                sleep(1000);
 
-                sleep(2000);
+                runStraight(57); // drive into carousel
+                sleep(1200);
 
-                runStraight(140); // drive into warehouse
+                ttMotor.setPower(1); //turn carousel
+                fLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                fRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                bLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                bRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                fLeft.setPower(.12);
+                fRight.setPower(.12);
+                bLeft.setPower(.08);
+                bRight.setPower(.08);//maintain contact on carousel
+                sleep(3000);
+                ttMotor.setPower(0); // done
+                fLeft.setPower(0);
+                fRight.setPower(0);
+
+                rotateLeft(88); //turn towards square
+                sleep(1000);
+                runStraight(57); //drive into square
 
                 telemetry.addData("Auto:", "Complete :)");
                 telemetry.update();

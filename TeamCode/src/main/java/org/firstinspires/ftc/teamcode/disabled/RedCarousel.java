@@ -26,7 +26,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.firstinspires.ftc.teamcode.auto;
+package org.firstinspires.ftc.teamcode.disabled;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -38,6 +38,7 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import java.util.List;
 
@@ -51,9 +52,9 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@Autonomous(name = "Blue Carousel", group = "-", preselectTeleOp = "HalfPresetDrive")
-// @Disabled
-public class BlueCarousel extends LinearOpMode {
+@Autonomous(name = "Red Carousel", group = "--", preselectTeleOp = "HalfPresetDrive")
+@Disabled
+public class RedCarousel extends LinearOpMode {
   /* Note: This sample uses the all-objects Tensor Flow model (FreightFrenzy_BCDM.tflite), which contains
    * the following 4 detectable objects
    *  0: Ball,
@@ -247,9 +248,9 @@ public class BlueCarousel extends LinearOpMode {
                 telemetry.addData("Auto:", "In Progress");
                 telemetry.update();
 
-                arcLeft(25, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
+                arcRight(32, 84.405);//(arc degree of bLeft to the center of hub, radius of circle arc bLeft to center of hub )
 
-                sleep(2000);
+                sleep(1500);
 
                 if (bottomLevel){
                     //set arm to bottom preset
@@ -279,7 +280,7 @@ public class BlueCarousel extends LinearOpMode {
                 }
                 else if (topLevel){
                     //set arm to top preset
-                    elbow.setTargetPosition(-165 + Edelta);
+                    elbow.setTargetPosition(-160 + Edelta);
                     shoulder.setTargetPosition(0 - Sdelta);
 
                     elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -320,13 +321,13 @@ public class BlueCarousel extends LinearOpMode {
                 telemetry.update();
 
                 if (bottomLevel) {
-                    runStraight(19); //approach hub
+                    runStraight(14); //approach hub
                 }
                 else if(middleLevel){
                     runStraight(38); //approach hub
                 }
                 else {
-                    runStraight(42); // approach hub
+                    runStraight(40); // approach hub
                 }
 
                 telemetry.addData("Cargo Release:", "Starting");
@@ -363,61 +364,62 @@ public class BlueCarousel extends LinearOpMode {
                 shoulder.setVelocity(0);
                 shoulder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-                // back away from hub
+                // back away from hub ( 7 cm from field panels )
                 if (bottomLevel) {
-                    runStraight(-19 + 7);
+                    runStraight(-14 + 7);
                 }
                 else if(middleLevel){
                     runStraight(-38 + 7);
                 }
                 else {
-                    runStraight(-42 + 7);
+                    runStraight(-40 + 7);
                 }
 
                 if (topLevel){
                     claw.setPosition(1); //close
                 }
 
-                if (!bottomLevel) {
-                    elbow.setVelocity(100);
-                }
+                elbow.setTargetPosition(0);
+                shoulder.setTargetPosition(0);
 
-                sleep(500);
-
-                if (bottomLevel) {
-                    shoulder.setTargetPosition(0);
-                    elbow.setTargetPosition(0);
-
+                if (bottomLevel){ // if shoulder down
                     shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    shoulder.setVelocity(1500);
+                    shoulder.setVelocity(1500); // move shoulder back to initial position
 
-                    sleep(700);
+                    sleep(500);
 
-                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION); // move arm back to initial position
                     elbow.setVelocity(500);
 
-                    sleep(3000);
+                    sleep(2000);
                 }
-                else {
-                    elbow.setTargetPosition(0);
-                    sleep(800);
+                else { // if shoulder upright
+                    shoulder.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    shoulder.setVelocity(1000); // move shoulder back to initial position
+
+                    elbow.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    elbow.setVelocity(100); //release arm
+
+                    sleep(1000);
                 }
 
-                arcLeft(-25, 84.405);
+                arcRight(-32, 84.405);
 
                 if (bottomLevel){
-                    rotateRight(85);
+                    rotateLeft(82);
                 }
                 else{
-                    rotateRight(88); //rotate toward warehouse
+                    rotateLeft(90); //rotate toward warehouse
                 }
 
                 sleep(1000);
 
-                runStraight(57); // drive into carousel
+                runStraight(56.5); // drive into carousel
                 sleep(1200);
 
-                ttMotor.setPower(1); //turn carousel
+                rotateLeft(10);
+
+                ttMotor.setPower(-1); //turn carousel
                 fLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 fRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 bLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -431,9 +433,10 @@ public class BlueCarousel extends LinearOpMode {
                 fLeft.setPower(0);
                 fRight.setPower(0);
 
-                rotateLeft(88); //turn towards square
+                rotateRight(10);
+                rotateRight(80); // turn towards square
                 sleep(1000);
-                runStraight(57); //drive into square
+                runStraight(57); // drive into square
 
                 telemetry.addData("Auto:", "Complete :)");
                 telemetry.update();
